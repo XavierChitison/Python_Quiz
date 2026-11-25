@@ -1,0 +1,2 @@
+:root[data-theme="light"]{--background-primary:#eef2f7;--background-secondary:#e5eaf2;--background-card:#fff;--background-elevated:#f8fafc;--background-editor:#f8fafc;--text-primary:#172033;--text-secondary:#5a667a;--text-muted:#768196;--border:#d7deea;--border-hover:#bcc6d7}
+:root[data-theme="light"] .topbar,:root[data-theme="light"] .sidebar,:root[data-theme="light"] .workspace-header,:root[data-theme="light"] .output-panel,:root[data-theme="light"] .editor-toolbar{background:#fff}
