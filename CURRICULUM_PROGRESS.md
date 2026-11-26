@@ -1,6 +1,6 @@
 # Curriculum overhaul checkpoint
 
-The 500-problem overhaul is implemented and locally validated. Deployment verification is pending.
+The 500-problem overhaul is implemented, validated, and deployed to GitHub Pages.
 
 ## Status
 
@@ -14,7 +14,7 @@ The 500-problem overhaul is implemented and locally validated. Deployment verifi
 - Batch 8 (levels 71–80): implemented and reference-tested; 50 replacements.
 - Batch 9 (levels 81–90): implemented and reference-tested; 50 replacements.
 - Batch 10 (levels 91–100): implemented and reference-tested; 50 replacements.
-- All 500 replacement records are integrated and locally validated; deployment is pending.
+- All 500 replacement records are integrated, locally validated, and deployed.
 - Cross-curriculum objective review identified two superficial duplicates, which were replaced; automated duplicate detection cannot prove semantic uniqueness.
 
 ## Implemented objectives
@@ -132,10 +132,12 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Level 9-5: the revised reference passed its eight cases and 500 additional generated cases in Pyodide; revision-one migration was tested.
 - Alternating harmonic-sum rounding was independently checked for all 20 permitted positive term counts.
 - Final full browser regression: 31 tests passed, covering routing, progress migration, the editor, execution, settings, exports, music controls, mobile viewport, and automated accessibility checks.
+- GitHub Actions CI and Pages deployment succeeded for release commit `e4b4272`.
+- The public site served version 2.1.0. An isolated browser verified the first and level-100 challenges, direct routes and refresh, incorrect and correct submissions, saved progress, custom input and console output, invalid-route recovery, the skip link, levels, settings persistence, information dialogs, history navigation, and a mobile viewport. No page errors or failed HTTP requests were observed in these checks.
 - Representative incorrect solutions for the first problem and all 35 level 4–10 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
 - The duplicate audit of all 500 records found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Commit the release-validation updates, push the completed curriculum if authorized, and verify the GitHub Pages deployment.
+No curriculum batches remain. Future challenge revisions should increment their content revision and rerun the relevant validation.
