@@ -14,7 +14,7 @@ export const stageNames = [
 ];
 
 export const levelTopics = [
-  'Printing values','Reading integer input','Geometry calculations','Unit conversions','Subtraction','Multiplication','Division','Exponents','Modulo','Arithmetic review',
+  'Printing values','Reading integer input','Geometry calculations','Unit conversions','Everyday calculations','Multiplication','Division','Exponents','Modulo','Arithmetic review',
   'Equality comparisons','Greater-than comparisons','Less-than comparisons','Even and odd','Positive and negative','Larger of two','Smaller of two','Multiple conditions','Boolean operators','Conditions review',
   'For loops','range()','Counting iterations','Summing numbers','Counting evens','Counting odds','Multiplication tables','While loops','Break and continue','Loops review',
   'String length','Character indexing','String slicing','Uppercase and lowercase','Counting characters','Counting vowels','Counting consonants','Reversing strings','Palindromes','String review',

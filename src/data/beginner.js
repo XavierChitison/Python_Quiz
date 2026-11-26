@@ -4,9 +4,11 @@ const multipleIntegersStarter = 'numbers = list(map(int, input().split()))\n\n# 
 
 function challenge(title, description, inputFormat, outputFormat, constraints, cases, hints, referenceSolution, explanation, starterCode = starter) {
   const examples = cases.slice(0, 2).map(([input, output, explanation]) => ({ input, output, explanation }));
+  const describeExample = (example, index) =>
+    `Example ${index + 1}: Input ${JSON.stringify(example.input.replace(/\n$/, ''))}; output ${JSON.stringify(example.output)}. ${example.explanation}`;
   return {
     title,
-    description: `${description} Example 1: ${examples[0].explanation} Example 2: ${examples[1].explanation}`,
+    description: `${description} ${examples.map(describeExample).join(' ')}`,
     learningObjectives: [description],
     inputFormat,
     outputFormat,
@@ -312,6 +314,86 @@ export const beginnerChallenges = {
     ['Average speed is total distance divided by elapsed time.', 'Both values are on the same line.', 'Divide distance by hours using /.', 'Format the result to two decimal places.', 'Keep both trailing zeros and use the specified halfway rule.'],
     'distance, hours = map(int, input().split())\nprint(f\"{distance / hours:.2f}\")\n',
     'Divide the distance by the positive duration and format the speed with two decimal places. Python rounds exact halfway cases to the even hundredth.',
+    multipleIntegersStarter
+  ),
+  'level-05-problem-1': challenge(
+    'Discounted Price in Cents',
+    'A store applies a whole-number percentage discount to an item whose original price is a whole number of dollars. Calculate the discounted price in cents.',
+    'Two integers price and discount on one line: the price in dollars and the discount percentage.',
+    'Print the discounted price as an integer number of cents.',
+    ['0 <= price <= 9999.', '0 <= discount <= 100.', 'One dollar equals 100 cents.'],
+    [
+      ['20 25\n', '1500', 'A 25% discount on 20 dollars saves 5 dollars, leaving 15 dollars, or 1500 cents.'],
+      ['50 10\n', '4500', 'A 10% discount on 50 dollars saves 5 dollars, leaving 4500 cents.'],
+      ['0 0\n', '0'], ['1 0\n', '100'], ['1 100\n', '0'], ['9999 100\n', '0'], ['100 1\n', '9900'], ['7 33\n', '469']
+    ],
+    ['Find the percentage of the original price that remains.', 'Subtract the discount percentage from 100.', 'Convert the original dollar price to cents.', 'Multiply by the remaining percentage and divide by 100.', 'Because the price is whole dollars, the answer is always a whole number of cents.'],
+    'price, discount = map(int, input().split())\nprint(price * (100 - discount))\n',
+    'The remaining percentage is 100 - discount. Multiplying it by the whole-dollar price gives the price in cents.',
+    multipleIntegersStarter
+  ),
+  'level-05-problem-2': challenge(
+    'Two-Item Shopping Total',
+    'A customer buys two types of items. Given the price in cents and the quantity for each type, calculate the total cost in cents.',
+    'Four integers price1, quantity1, price2, and quantity2 on one line.',
+    'Print the total cost as an integer number of cents.',
+    ['0 <= price1, price2 <= 10000.', '0 <= quantity1, quantity2 <= 100.'],
+    [
+      ['100 2 50 3\n', '350', 'Two items at 100 cents cost 200 cents, and three at 50 cents cost 150; the total is 350.'],
+      ['500 1 199 2\n', '898', 'One item at 500 cents and two at 199 cents cost 500 + 398 = 898 cents.'],
+      ['0 100 0 100\n', '0'], ['1000 0 100 0\n', '0'], ['1 1 1 1\n', '2'], ['10000 100 10000 100\n', '2000000'], ['7 3 2 4\n', '29'], ['99 0 123 3\n', '369']
+    ],
+    ['Calculate a subtotal for each item type.', 'Multiply each price by its own quantity.', 'Add the two subtotals.', 'A zero quantity contributes zero.', 'Print the result in cents without a currency symbol.'],
+    'price1, quantity1, price2, quantity2 = map(int, input().split())\nprint(price1 * quantity1 + price2 * quantity2)\n',
+    'Multiply each price by its quantity and add the two subtotals.',
+    multipleIntegersStarter
+  ),
+  'level-05-problem-3': challenge(
+    'Simple Interest in Cents',
+    'Calculate the simple interest earned on a whole-dollar principal at a whole-number annual percentage rate for a whole number of years. Interest is not compounded; print the interest alone, not the principal.',
+    'Three integers principal, rate, and years on one line: principal in dollars, annual rate as a percentage, and duration in years.',
+    'Print the total interest as an integer number of cents.',
+    ['0 <= principal <= 10000.', '0 <= rate <= 100.', '0 <= years <= 50.', 'Simple interest in dollars is principal * rate * years / 100.'],
+    [
+      ['1000 5 2\n', '10000', 'At 5% per year, 1000 dollars earns 50 dollars each year; two years earn 100 dollars, or 10000 cents.'],
+      ['200 3 1\n', '600', 'Three percent of 200 dollars is 6 dollars, or 600 cents, for one year.'],
+      ['0 50 10\n', '0'], ['100 0 20\n', '0'], ['100 10 0\n', '0'], ['1 1 1\n', '1'], ['10000 100 50\n', '50000000'], ['750 4 3\n', '9000']
+    ],
+    ['Use the simple-interest formula given in the constraints.', 'The rate is a percentage, so divide it by 100 when computing dollars.', 'Multiply by the number of years.', 'Convert the result from dollars to cents.', 'The division and multiplication by 100 cancel for whole-dollar principal.'],
+    'principal, rate, years = map(int, input().split())\nprint(principal * rate * years)\n',
+    'Compute principal * rate * years / 100 dollars, then multiply by 100 to express the interest in cents.',
+    multipleIntegersStarter
+  ),
+  'level-05-problem-4': challenge(
+    'Split a Bill and Tip',
+    'Add a restaurant bill and a tip, both in cents. Split the total equally among the diners using whole cents. Report the amount per diner and the cents left over.',
+    'Three integers bill, tip, and diners on one line.',
+    'Print the whole-cent share per diner and the leftover cents, separated by a space.',
+    ['0 <= bill, tip <= 10000.', '1 <= diners <= 100.', 'Leftover cents must be less than the number of diners.'],
+    [
+      ['1200 300 4\n', '375 0', 'The total is 1500 cents; dividing by 4 gives 375 cents each with none left over.'],
+      ['1000 51 3\n', '350 1', 'The total is 1051 cents; three diners get a 350-cent share and 1 cent remains.'],
+      ['0 0 1\n', '0 0'], ['1 0 2\n', '0 1'], ['10000 10000 1\n', '20000 0'], ['9999 1 100\n', '100 0'], ['1 1 3\n', '0 2'], ['17 5 5\n', '4 2']
+    ],
+    ['First add the bill and tip.', 'Integer division finds the whole-cent share.', 'The remainder gives the cents that cannot be split equally.', 'Both results come from the same total and number of diners.', 'Print the share first, then the remainder.'],
+    'bill, tip, diners = map(int, input().split())\ntotal = bill + tip\nprint(total // diners, total % diners)\n',
+    'Add the bill and tip, then use integer division and remainder to split the total into equal shares and leftover cents.',
+    multipleIntegersStarter
+  ),
+  'level-05-problem-5': challenge(
+    'Pizzas Needed for a Group',
+    'Each person in a group wants the same number of pizza slices. Each pizza has the same number of slices. Find the smallest whole number of pizzas that provides enough slices.',
+    'Three integers people, slices_per_person, and slices_per_pizza on one line.',
+    'Print the minimum number of whole pizzas needed.',
+    ['0 <= people <= 100.', '1 <= slices_per_person <= 10.', '1 <= slices_per_pizza <= 100.', 'A group of zero people needs zero pizzas.'],
+    [
+      ['5 2 8\n', '2', 'Five people need 10 slices. One 8-slice pizza is not enough, so two pizzas are needed.'],
+      ['3 2 6\n', '1', 'Three people need exactly 6 slices, so one 6-slice pizza is enough.'],
+      ['0 1 8\n', '0'], ['1 1 1\n', '1'], ['100 10 1\n', '1000'], ['7 3 4\n', '6'], ['10 1 10\n', '1'], ['1 1 10\n', '1']
+    ],
+    ['Multiply the number of people by slices per person.', 'Divide the required slices by the slices in one pizza.', 'A partial pizza is not enough: round up when there are leftover slices.', 'For nonnegative a and positive b, (a + b - 1) // b rounds a / b up.', 'Check both an exact division and a group of zero people.'],
+    'people, slices_per_person, slices_per_pizza = map(int, input().split())\nslices = people * slices_per_person\nprint((slices + slices_per_pizza - 1) // slices_per_pizza)\n',
+    'Calculate the required slices, then use ceiling integer division to count whole pizzas, including any partially needed pizza.',
     multipleIntegersStarter
   )
 };

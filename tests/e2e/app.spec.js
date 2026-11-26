@@ -154,6 +154,27 @@ test('a revised conversion challenge rejects a sample-only answer and accepts it
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-04-problem-5'])).toBe(1);
 });
 
+test('a revised shopping challenge rejects rounding down and accepts the correct solution', async ({ page }) => {
+  await page.addInitScript(() => {
+    const solved = Array.from({ length: 4 }, (_, index) => `level-05-problem-${index + 1}`);
+    localStorage.setItem('xpc-progress', JSON.stringify({
+      profile: { level: 5 },
+      solved,
+      solvedRevisions: Object.fromEntries(solved.map(id => [id, 1]))
+    }));
+  });
+  await page.goto('/#/problems/level-05-problem-5');
+  await expect(page.getByRole('heading', { name: 'Pizzas Needed for a Group' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Problem description' })).toContainText('Example 2: Input "3 2 6"; output "1".');
+  await setEditorValue(page, 'people, per_person, per_pizza = map(int, input().split())\nprint(people * per_person // per_pizza)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Wrong Answer', { timeout: 90000 });
+  await setEditorValue(page, 'people, per_person, per_pizza = map(int, input().split())\nprint((people * per_person + per_pizza - 1) // per_pizza)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.getByRole('heading', { name: 'Level Complete' })).toBeVisible({ timeout: 90000 });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-05-problem-5'])).toBe(1);
+});
+
 test('All Levels exposes the curriculum and preserves level selection', async ({ page }) => {
   await page.goto('/#/levels');
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
