@@ -28,7 +28,7 @@ describe("Xavier's Python Challenge curriculum", () => {
   });
   it('gives revised beginner challenges distinct solutions and meaningful examples', () => {
     const revised = problems.filter(problem => problem.contentRevision === 1);
-    expect(revised).toHaveLength(250);
+    expect(revised).toHaveLength(300);
     expect(new Set(revised.map(problem => problem.referenceSolution)).size).toBe(revised.length);
     for (const problem of revised) {
       expect(problem.examples).toHaveLength(2);

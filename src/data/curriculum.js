@@ -9,6 +9,8 @@ import { strings3135Challenges } from './strings-31-35.js';
 import { strings3640Challenges } from './strings-36-40.js';
 import { lists4145Challenges } from './lists-41-45.js';
 import { lists4650Challenges } from './lists-46-50.js';
+import { collections5155Challenges } from './collections-51-55.js';
+import { collections5660Challenges } from './collections-56-60.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -29,7 +31,7 @@ export const levelTopics = [
   'Counting and accumulation','Filtered sums and sequences','Digit iteration','Sentinels and stopping conditions','Sequences and divisors','Nested loop patterns','Streaming and runs','Iterative conversion','Number theory loops','Loop applications',
   'String slicing and indexing','Character classification','Words and delimiters','Pattern operations','Character relationships','Text transformations','Structured strings','Word processing','String search','String problem solving',
   'List fundamentals','List transformations','List indexing and rearrangement','List search and comparisons','Sorted lists and merging','Prefixes and windows','List grouping and grids','List updates and circular sequences','List search and subarrays','List algorithm applications',
-  'Dictionary basics','Dictionary values','Updating dictionaries','Character frequency','Word frequency','Repeated elements','Set basics','Set intersections','Grouping data','Hash review',
+  'Dictionary fundamentals','Frequencies and lookups','Set applications','Grouping and keyed records','Dictionary operations','Multisets and indexing','Frequency algorithms','Sparse data','Graph mappings','Dictionary applications',
   'Defining functions','Parameters','Return values','Multiple functions','Nested loops','Matrices','Basic sorting','Custom sorting','Algorithm design','Complexity',
   'Two-pointer basics','Two-sum','Sorted arrays','Sliding windows','Fixed windows','Variable windows','Prefix sums','Binary search','Intervals','Interview review',
   'Stacks','Stack problems','Queues','Linked list basics','Linked list traversal','Linked list manipulation','Recursion basics','Recursive problems','Binary trees','Tree traversal',
@@ -113,7 +115,8 @@ function makeProblem(level, index) {
     conditions1115Challenges[id] || conditions1620Challenges[id] ||
     loops2125Challenges[id] || loops2630Challenges[id] ||
     strings3135Challenges[id] || strings3640Challenges[id] ||
-    lists4145Challenges[id] || lists4650Challenges[id];
+    lists4145Challenges[id] || lists4650Challenges[id] ||
+    collections5155Challenges[id] || collections5660Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }
