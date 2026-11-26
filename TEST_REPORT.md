@@ -1,20 +1,18 @@
 # Test report
 
-## Latest verification
+## Verification results
 
-- `npm test`: passed, 19 unit tests across 4 test files, including audio-controller behavior.
-- `npm run test:e2e`: passed, 24 browser tests. Coverage includes static hosting at `/` and `/repo/`, stale-module caching, direct and invalid hash routes, browser history, skip-link focus, Python execution and progression, runtime-load retry, slow cold-start handling, timeouts, cancellation, output limits, worker recovery, Ace syntax highlighting, draft export, and music settings.
-- `npm run test:accessibility`: passed; no serious or critical Axe violations on the default workspace.
-- `npm run validate:problems`: passed; 100 levels, 500 challenge records, 1,500 public cases, 2,500 hidden cases, and 4,000/4,000 reference-solution executions.
-- The browser suite uses the plain static test server, not a bundler or development server. Python and the checked-in Ace assets both work below `/repo/`.
-- Audio unit tests use a fake Web Audio context to cover opt-in, track switching, volume, visibility pause/resume, autoplay recovery, and disabled effects.
-- On the live GitHub Pages site, Chromium checks passed for startup, syntax highlighting, Python execution and custom input, correct and incorrect submissions, progress and draft persistence, navigation and information dialogs, skip-link focus, browser history, music and sound-effect scheduling, settings, export download, invalid routes, mobile width, and Axe serious/critical checks. A seeded level-10 completion showed the milestone dialog and confetti. No application JavaScript exceptions or same-origin HTTP errors were observed in the checked sessions.
-- The GitHub Pages deployment and CI for commit `68129ae` completed successfully.
+- `npm test`: 101 tests passed across 25 unit-test files.
+- `npm run test:e2e`: all 33 Playwright browser tests passed on the local static test server.
+- `npm run test:accessibility`: the representative route/state Axe test passed with zero reported violations. Coverage includes 15 sampled states; details and limitations are in [ACCESSIBILITY_REPORT.md](./ACCESSIBILITY_REPORT.md).
+- `npm run validate:problems`: all 4,001 reference executions passed; 100 levels and 500 challenges were validated, with 1,500 public and 2,501 hidden cases.
+- Responsive automated checks covered workspace, All Levels, and Settings at 16 widths from 320px to 2560px, text-spacing overrides at 320px, and portrait/landscape viewport sizes; no page-wide horizontal overflow was found.
+- Touch-enabled phone emulation completed a correct challenge, verified saved progress/draft, exported the Python file, and checked a landscape viewport. This did not emulate an operating-system keyboard or a physical device.
+- Browser regression coverage includes routing and history, skip-link focus, route focus and page titles, Ace highlighting/editing, output-tab keyboard behavior without recreating Ace, Python execution, correct and incorrect solutions, custom input, errors and worker recovery, progress, settings, audio controls, export, and level-completion accessibility.
+- The project remains a static site: tests used the repository's static server, without a build or backend.
 
-## Known gaps
+## Browser and deployment limits
 
-- The curriculum validator proves structural and reference-test consistency, not that 500 entries are distinct or accurately teach their assigned topic.
-- Axe coverage is limited to the default workspace; automated checks do not prove full accessibility or replace assistive-technology testing.
-- The browser audio checks verify Web Audio state and scheduling, not audible output on physical speakers.
-
-Production checks were performed in isolated Chromium browser profiles.
+- Playwright Chromium was available. Firefox and WebKit executables were not installed; no other browser engine was tested.
+- No physical mobile/tablet, screen reader, audible-speaker, virtual-keyboard, pinch-zoom, or real-device safe-area test was performed.
+- These responsive and accessibility changes have not yet been verified on GitHub Pages. Production status must be updated after deployment checks; do not infer production success from local tests.

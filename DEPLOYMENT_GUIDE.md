@@ -14,7 +14,7 @@ GitHub Pages serves the root `index.html` and its `src/` and `public/` directori
 
 The branch must contain the static entry point, styles, JavaScript modules, and `public/vendor/ace/` assets; committing only `index.html` is not sufficient. The `.nojekyll` file is included for direct static publishing. If a browser still displays an old version after Pages finishes deploying, refresh the page and check the Pages deployment status before changing application settings.
 
-GitHub Pages may cache files for several minutes. When releasing changes to the application modules or worker, update the shared `v` query in `index.html`, `src/main.js`, `src/app.js`, and `src/services/python-runner.js` together so returning browsers load compatible versions. Likewise, version changed static assets that may already be cached.
+GitHub Pages may cache files for several minutes. When releasing changes, update the shared `v` query consistently across the entry point, versioned application-module imports, and worker URL so returning browsers load compatible versions. Also version changed static assets such as the stylesheet when they may already be cached.
 
 ## Limitations
 

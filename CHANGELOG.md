@@ -15,4 +15,8 @@
 - Added unit and browser coverage for audio preferences, editor highlighting, Python execution, unsaved-code export, and accessible music controls.
 - Documented the vendored editor and runtime licenses in `THIRD_PARTY_LICENSES.md`.
 - Added focused unit and browser tests and updated the static-hosting documentation.
-- Published the static application from `master` to GitHub Pages. Curriculum topic quality remains a known gap.
+- Published the static application from `master` to GitHub Pages with all 500 challenges.
+- Stacked the coding workspace through 900px, improved phone/tablet text and touch targets, and added safe-area and dynamic viewport support.
+- Completed accessible execution tabs with keyboard navigation while preserving the Ace editor instance and state.
+- Added route-specific document titles and main-content focus, improved level status names, and extended reduced-motion handling.
+- Added representative responsive, touch-emulated gameplay, and multi-route Axe coverage; documented the tested scope and device limitations in accessibility and responsive reports.

@@ -64,8 +64,11 @@ test('direct, invalid, and history routes remain usable under the repository pre
   await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await page.getByRole('link', { name: 'All Levels', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
+  await expect(page.locator('#main-content')).toBeFocused();
+  await expect(page).toHaveTitle(/All Levels — Xavier's Python Challenge/);
   await page.getByRole('link', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+  await expect(page.locator('#main-content')).toBeFocused();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
   await page.goForward();
@@ -220,6 +223,7 @@ test('a revised digit challenge checks leading zeros when reversing', async ({ p
 });
 
 test('a revised multiline challenge preserves spaces in browser Python output', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.addInitScript(() => {
     localStorage.setItem('xpc-progress', JSON.stringify({ settings: { unrestrictedPractice: true } }));
   });
@@ -360,11 +364,56 @@ test('a previously cached unversioned app does not break the current release', a
   await expect(page.locator('.console-output')).toContainText('fresh worker', { timeout: 90_000 });
 });
 
-test('workspace has no automatically detectable serious accessibility violations', async ({ page }) => {
+test('representative routes and interaction states pass accessibility scans without axe violations', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const scan = async () => {
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations).toEqual([]);
+  };
+  for (const [route, heading] of [
+    ['/', 'Swap Two Values'],
+    ['/#/levels', 'All Levels'],
+    ['/#/daily', 'Daily Challenge'],
+    ['/#/interview', 'Interview Practice'],
+    ['/#/interview/results', 'No assessment results yet'],
+    ['/#/settings', 'Settings']
+  ]) {
+    await page.goto(route);
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+    if (route === '/') {
+      const animationDuration = await page.locator('.page-enter').evaluate(element => getComputedStyle(element).animationDuration);
+      expect(parseFloat(animationDuration)).toBeLessThan(0.001);
+    }
+    await scan();
+  }
+  for (const name of ['About', 'Help', 'Privacy', 'Keyboard shortcuts']) {
+    const trigger = page.getByRole('button', { name, exact: true });
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeFocused();
+    await scan();
+    if (name === 'About') {
+      await page.keyboard.press('Shift+Tab');
+      await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('button', { name: 'Close dialog' })).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+    } else {
+      await page.getByRole('button', { name: 'Close', exact: true }).click();
+    }
+  }
   await page.goto('/');
-  const results = await new AxeBuilder({ page }).analyze();
-  const serious = results.violations.filter(violation => ['serious', 'critical'].includes(violation.impact));
-  expect(serious).toEqual([]);
+  await page.locator('.hint-box summary').click();
+  await scan();
+  await page.getByRole('tab', { name: 'Console' }).click();
+  await scan();
+  for (const width of [320, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await scan();
+  }
 });
 
 test('editor drafts persist after navigation and reload', async ({ page }) => {
@@ -496,6 +545,8 @@ test('solving the five problems advances to Level 2 and celebrates completion', 
     }
   }
   await expect(page.getByRole('heading', { name: 'Level Complete' })).toBeVisible();
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).profile.level)).toBe(2);
   await expect(page.getByRole('link', { name: 'Continue to Level 2' })).toBeVisible();
 });
@@ -595,13 +646,173 @@ test('slow Python runtime initialization does not consume the code execution lim
   await expect(page.locator('#execution-state')).toHaveText('Run complete · no progress or XP awarded');
 });
 
-test('workspace remains usable at a mobile viewport', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test('workspace, levels, and settings reflow without horizontal page overflow', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
-  const widths = await page.evaluate(() => ({
+  const viewports = [
+    [320, 720], [360, 800], [375, 812], [390, 844], [414, 896], [430, 932],
+    [480, 900], [600, 960], [768, 1024], [820, 1180], [900, 600],
+    [1024, 768], [1280, 800], [1440, 900], [1920, 1080], [2560, 1440]
+  ];
+  for (const [width, height] of viewports) {
+    await page.setViewportSize({ width, height });
+    if (width <= 900) {
+      await page.waitForFunction(() => {
+        const control = document.querySelector('.editor-tools .icon-button');
+        return control && control.getBoundingClientRect().height >= 43.5;
+      });
+    }
+    const layout = await page.evaluate(() => {
+      const bounds = selector => {
+        const element = document.querySelector(selector);
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, top: rect.top, right: rect.right, width: rect.width, height: rect.height };
+      };
+      return {
+        documentWidth: document.documentElement.scrollWidth,
+        viewportWidth: document.documentElement.clientWidth,
+        workspace: bounds('.workspace-grid'),
+        rail: bounds('.problem-rail'),
+        challenge: bounds('.challenge-panel'),
+        editor: bounds('.editor-panel'),
+        controls: [
+          '.nav-link', '.problem-dot', '.button-run', '.editor-tools .icon-button',
+          '.hint-box summary', '.test-case summary'
+        ].map(selector => ({ selector, ...bounds(selector) }))
+      };
+    });
+    expect(layout.documentWidth, `workspace overflow at ${width}px`).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(layout.challenge.right, `problem panel clipped at ${width}px`).toBeLessThanOrEqual(width);
+    expect(layout.editor.right, `editor panel clipped at ${width}px`).toBeLessThanOrEqual(width);
+    if (width <= 900) {
+      expect(Math.abs(layout.challenge.left - layout.editor.left), `workspace should stack at ${width}px`).toBeLessThanOrEqual(1);
+      for (const control of layout.controls) {
+        expect(control.width, `${control.selector} touch target too narrow at ${width}px`).toBeGreaterThanOrEqual(43.5);
+        expect(control.height, `${control.selector} touch target too short at ${width}px`).toBeGreaterThanOrEqual(43.5);
+      }
+    } else {
+      expect(layout.challenge.left).toBeLessThan(layout.editor.left);
+      expect(Math.abs(layout.challenge.top - layout.editor.top)).toBeLessThanOrEqual(1);
+    }
+    if (width <= 480) {
+      const links = await page.locator('.primary-nav .nav-link').evaluateAll(elements => elements.map(element => {
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, right: rect.right };
+      }));
+      expect(links).toHaveLength(5);
+      for (const link of links) {
+        expect(link.left).toBeGreaterThanOrEqual(0);
+        expect(link.right).toBeLessThanOrEqual(width);
+      }
+    }
+  }
+
+  for (const route of ['/#/levels', '/#/settings']) {
+    await page.goto(route);
+    for (const [width, height] of viewports) {
+      await page.setViewportSize({ width, height });
+      if (route.endsWith('levels') && width <= 900) {
+        await page.waitForFunction(() => {
+          const tile = document.querySelector('.level-grid .level-tile');
+          return tile && tile.getBoundingClientRect().height >= 43.5;
+        });
+      }
+      const widths = await page.evaluate(() => ({
+        document: document.documentElement.scrollWidth,
+        viewport: document.documentElement.clientWidth
+      }));
+      expect(widths.document, `${route} overflow at ${width}px`).toBeLessThanOrEqual(widths.viewport);
+      if (route.endsWith('levels') && width <= 900) {
+        const tileHeights = await page.locator('.level-grid .level-tile').evaluateAll(elements =>
+          elements.map(element => {
+            const rect = element.getBoundingClientRect();
+            return { width: rect.width, height: rect.height };
+          })
+        );
+        expect(tileHeights.length).toBeGreaterThan(0);
+        for (const tile of tileHeights) {
+          expect(tile.width).toBeGreaterThanOrEqual(43.5);
+          expect(tile.height).toBeGreaterThanOrEqual(43.5);
+        }
+      }
+    }
+  }
+  await page.goto('/');
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.waitForFunction(() => {
+    const control = document.querySelector('.editor-tools .icon-button');
+    const nav = document.querySelector('.primary-nav');
+    return control?.getBoundingClientRect().height >= 43.5 &&
+      nav && getComputedStyle(nav).flexWrap === 'wrap';
+  });
+  await page.addStyleTag({ content: `
+    *, *::before, *::after { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }
+    p { margin-bottom: 2em !important; }
+  ` });
+  const spacedTextWidths = await page.evaluate(() => ({
     document: document.documentElement.scrollWidth,
     viewport: document.documentElement.clientWidth
   }));
-  expect(widths.document).toBeLessThanOrEqual(widths.viewport);
+  expect(spacedTextWidths.document).toBeLessThanOrEqual(spacedTextWidths.viewport);
+  await page.getByRole('button', { name: 'Run Code' }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: 'Run Code' })).toBeVisible();
+});
+
+test('execution tabs support arrow keys without recreating the editor', async ({ page }) => {
+  await page.goto('/');
+  await setEditorValue(page, 'print("keep editor state")');
+  await page.evaluate(() => { window.__xpcEditor = window.ace.edit(document.getElementById('editor-surface')); });
+  const consoleTab = page.getByRole('tab', { name: 'Console' });
+  await consoleTab.click();
+  await expect(consoleTab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tabpanel')).toContainText('Console output will appear here.');
+  expect(await getEditorValue(page)).toBe('print("keep editor state")');
+  expect(await page.evaluate(() => window.__xpcEditor === window.ace.edit(document.getElementById('editor-surface')))).toBe(true);
+  await consoleTab.press('ArrowLeft');
+  await expect(page.getByRole('tab', { name: /Test cases/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tab', { name: /Test cases/ })).toBeFocused();
+  expect(await getEditorValue(page)).toBe('print("keep editor state")');
+});
+
+test('touch-emulated phone can submit, save progress, and export a solution', async ({ page }) => {
+  test.setTimeout(120_000);
+  const context = await page.context().browser().newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+    acceptDownloads: true
+  });
+  const phone = await context.newPage();
+  try {
+    await phone.goto('/');
+    await expect(phone.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
+    const solution = 'a, b = map(int, input().split())\nprint(b, a)';
+    await setEditorValue(phone, solution);
+    await phone.getByRole('button', { name: 'Submit Solution' }).tap();
+    await expect(phone.locator('#execution-state')).toHaveText('Accepted', { timeout: 90_000 });
+    expect(await phone.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solved))
+      .toContain('level-01-problem-1');
+    expect(await phone.evaluate(() => localStorage.getItem('xpc-draft-level-01-problem-1'))).toBe(solution);
+
+    await phone.getByRole('link', { name: 'Settings', exact: true }).tap();
+    await expect(phone.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    const downloadPromise = phone.waitForEvent('download');
+    await phone.getByRole('button', { name: 'Export .py file' }).tap();
+    const download = await downloadPromise;
+    expect(await readFile(await download.path(), 'utf8')).toBe(solution);
+
+    await phone.goto('/#/problems/level-01-problem-1');
+    await expect(phone.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
+    expect(await getEditorValue(phone)).toBe(solution);
+    await phone.setViewportSize({ width: 844, height: 390 });
+    const dimensions = await phone.evaluate(() => ({
+      document: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth
+    }));
+    expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
+  } finally {
+    await context.close();
+  }
 });

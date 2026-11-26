@@ -1,12 +1,12 @@
-import { levels, problems, stageNames } from './data/curriculum.js?v=2.1.0';
+import { levels, problems, stageNames } from './data/curriculum.js?v=2.2.0';
 import {
   clearApplicationData, createDefaultProgress, exportBackup, getDraft, normalizeProgress,
   progressSnapshot, saveDraft, saveProgress, validateBackup
-} from './services/storage.js?v=2.1.0';
-import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.1.0';
-import { runPython, stopPython } from './services/python-runner.js?v=2.1.0';
-import { audioController, playSound } from './services/audio.js?v=2.1.0';
-import { celebrate } from './services/effects.js?v=2.1.0';
+} from './services/storage.js?v=2.2.0';
+import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.2.0';
+import { runPython, stopPython } from './services/python-runner.js?v=2.2.0';
+import { audioController, playSound } from './services/audio.js?v=2.2.0';
+import { celebrate } from './services/effects.js?v=2.2.0';
 
 const REMOVED_ROUTES = new Set([
   'dashboard', 'roadmap', 'generator', 'playground', 'debugging', 'prediction',
@@ -93,7 +93,6 @@ export class App {
       return false;
     }
   }
-
   mainProblemId() {
     const last = problems.find(problem => problem.id === this.progress.lastProblemId);
     if (last && isProblemAvailable(last, this.progress)) {
@@ -166,6 +165,7 @@ export class App {
       this.ui.statusKind = 'error';
     }
     this.render();
+    this.root.querySelector('#main-content')?.focus();
   }
 
   render() {
@@ -173,6 +173,17 @@ export class App {
     const route = this.resolveRoute();
     const previousProblemId = this.renderedProblemId;
     this.currentRoute = route;
+    const activeProblem = route.page === 'problem' ? problems.find(item => item.id === route.id) : null;
+    const pageTitle = activeProblem
+      ? `${activeProblem.title} · Level ${activeProblem.level}`
+      : ({
+          levels: 'All Levels',
+          daily: 'Daily Challenge',
+          interview: 'Interview Practice',
+          'interview-results': 'Practice Results',
+          settings: 'Settings'
+        }[route.page] || 'Python coding practice');
+    document.title = `${pageTitle} — Xavier's Python Challenge`;
     if (route.page === 'problem' && this.progress.activeAssessment) {
       const assessmentIndex = this.progress.activeAssessment.questionIds?.indexOf(route.id) ?? -1;
       if (assessmentIndex >= 0) this.progress.activeAssessment.currentIndex = assessmentIndex;
@@ -258,20 +269,10 @@ export class App {
     const isAssessment = Boolean(this.progress.activeAssessment);
     const retryRuntime = this.ui.statusKind === 'error' && RUNTIME_LOAD_ERROR.test(this.ui.status);
     const assessment = this.progress.activeAssessment;
-    const hiddenSummary = this.ui.results.filter(item => item.visibility === 'hidden' && item.passed).length;
-    const hiddenTotal = this.ui.results.filter(item => item.visibility === 'hidden').length;
-    const publicResults = this.ui.results.filter(item => item.visibility === 'public');
-    const panel = this.ui.outputTab === 'tests'
-      ? `<div class="output-body" id="output-body" aria-live="polite">
-          ${problem.publicTestCases.map((testCase, index) => this.renderTestCase(testCase, publicResults[index], index + 1, 'public')).join('')}
-          ${problem.hiddenTestCases?.length ? `<div class="hidden-summary"><strong>Hidden tests</strong><span>${hiddenTotal ? `${hiddenSummary}/${hiddenTotal} passed` : `${problem.hiddenTestCases.length} hidden cases`}</span><small>Hidden inputs and expected answers are not shown.</small></div>` : ''}
-        </div>`
-      : `<div class="output-body" id="output-body" aria-live="polite"><pre class="console-output">${escapeHTML(this.ui.consoleText || 'Console output will appear here.')}</pre></div>`;
-
     return `<section class="level-banner" aria-label="Level progress">
         <div><p class="eyebrow">${escapeHTML(level.stageTitle)} · WORLD ${level.stage}</p><h1>Level ${level.number}: ${escapeHTML(level.title)}</h1><p>${escapeHTML(level.description)}</p></div>
         <div class="level-progress"><div class="progress-label"><span>${solvedCount} of ${level.problems.length} problems complete</span><strong>${Math.round(solvedCount / level.problems.length * 100)}%</strong></div><div class="progress-track" role="progressbar" aria-label="Level ${level.number} progress" aria-valuemin="0" aria-valuemax="${level.problems.length}" aria-valuenow="${solvedCount}"><div class="progress-fill" style="width:${solvedCount / level.problems.length * 100}%"></div></div></div>
-        <div class="problem-dots" aria-label="Problems in level ${level.number}">${level.problems.map((item, index) => {
+        <div class="problem-dots" role="group" aria-label="Problems in level ${level.number}">${level.problems.map((item, index) => {
           const itemLocked = !this.progress.settings.unrestrictedPractice && index > 0 && !this.progress.solved.includes(level.problems[index - 1].id) && !this.progress.solved.includes(item.id);
           const done = this.progress.solved.includes(item.id);
           return `<a class="problem-dot ${item.id === problem.id ? 'current' : ''} ${done ? 'done' : ''} ${itemLocked ? 'locked' : ''}" href="${itemLocked ? '#' : `#/problems/${item.id}`}" aria-label="Problem ${index + 1}${done ? ', completed' : ''}${itemLocked ? ', locked' : ''}" ${itemLocked ? 'aria-disabled="true" tabindex="-1"' : ''}>${done ? '✓' : index + 1}</a>`;
@@ -323,10 +324,10 @@ export class App {
           <div class="output-panel">
             <div class="output-tabs">
               <div class="output-tab-list" role="tablist" aria-label="Execution output">
-              <button class="output-tab-button ${this.ui.outputTab === 'tests' ? 'active' : ''}" role="tab" aria-selected="${this.ui.outputTab === 'tests'}" data-action="output-tab" data-tab="tests">Test cases (${problem.publicTestCases?.length || 0})</button>
-              <button class="output-tab-button ${this.ui.outputTab === 'console' ? 'active' : ''}" role="tab" aria-selected="${this.ui.outputTab === 'console'}" data-action="output-tab" data-tab="console">Console</button>
-              </div><button class="button button-quiet" data-action="clear-console" style="margin-left:auto;min-height:26px;padding:0 8px">Clear</button>
-            </div>${panel}
+              <button id="output-tab-tests" class="output-tab-button ${this.ui.outputTab === 'tests' ? 'active' : ''}" role="tab" aria-controls="output-body" aria-selected="${this.ui.outputTab === 'tests'}" tabindex="${this.ui.outputTab === 'tests' ? '0' : '-1'}" data-action="output-tab" data-tab="tests">Test cases (${problem.publicTestCases?.length || 0})</button>
+              <button id="output-tab-console" class="output-tab-button ${this.ui.outputTab === 'console' ? 'active' : ''}" role="tab" aria-controls="output-body" aria-selected="${this.ui.outputTab === 'console'}" tabindex="${this.ui.outputTab === 'console' ? '0' : '-1'}" data-action="output-tab" data-tab="console">Console</button>
+              </div><button class="button button-quiet" data-action="clear-console" style="margin-left:auto;min-height:44px;padding:0 8px">Clear console</button>
+            </div><div class="output-body" id="output-body" role="tabpanel" tabindex="0" aria-labelledby="output-tab-${this.ui.outputTab}">${this.renderOutputBody(problem)}</div>
           </div>
         </section>
       </div>`;
@@ -343,6 +344,31 @@ export class App {
     const actual = result?.actual ?? 'Run or submit your code to see output.';
     return `<details class="test-case"><summary><span class="case-state ${state}" aria-hidden="true">${result ? result.passed ? '✓' : '!' : number}</span><strong>Test ${number}</strong><span class="case-status ${state}">${escapeHTML(status)}</span></summary>
       <div class="case-details"><div><small>Input</small><pre>${escapeHTML(testCase.input)}</pre></div><div><small>Expected</small><pre>${escapeHTML(testCase.output)}</pre></div><div><small>Actual</small><pre>${escapeHTML(actual)}</pre></div></div></details>`;
+  }
+
+  renderOutputBody(problem) {
+    if (this.ui.outputTab === 'console') {
+      return `<pre class="console-output">${escapeHTML(this.ui.consoleText || 'Console output will appear here.')}</pre>`;
+    }
+    const publicResults = this.ui.results.filter(item => item.visibility === 'public');
+    const hiddenSummary = this.ui.results.filter(item => item.visibility === 'hidden' && item.passed).length;
+    const hiddenTotal = this.ui.results.filter(item => item.visibility === 'hidden').length;
+    return `${problem.publicTestCases.map((testCase, index) => this.renderTestCase(testCase, publicResults[index], index + 1, 'public')).join('')}
+      ${problem.hiddenTestCases?.length ? `<div class="hidden-summary"><strong>Hidden tests</strong><span>${hiddenTotal ? `${hiddenSummary}/${hiddenTotal} passed` : `${problem.hiddenTestCases.length} hidden cases`}</span><small>Hidden inputs and expected answers are not shown.</small></div>` : ''}`;
+  }
+
+  updateOutputPanel() {
+    const problem = problems.find(item => item.id === this.currentRoute?.id);
+    const body = this.root.querySelector('#output-body');
+    if (!problem || !body) return;
+    for (const tab of this.root.querySelectorAll('[data-action="output-tab"]')) {
+      const selected = tab.dataset.tab === this.ui.outputTab;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    }
+    body.setAttribute('aria-labelledby', `output-tab-${this.ui.outputTab}`);
+    body.innerHTML = this.renderOutputBody(problem);
   }
 
   renderAssessmentBar(assessment) {
@@ -402,7 +428,7 @@ export class App {
     const state = done ? 'completed' : current ? 'current' : locked ? 'locked' : '';
     const icon = done ? '✓' : locked ? '🔒' : current ? 'CURRENT' : '';
     const disabled = locked ? 'disabled aria-disabled="true"' : '';
-    return `<button class="level-tile ${state}" data-action="select-level" data-level="${level.number}" ${disabled} aria-label="Level ${level.number}, ${escapeHTML(level.title)}, ${done ? 'completed' : current ? 'current' : locked ? 'locked' : 'available'}"><span class="tile-icon">${icon}</span><span>${level.number}</span></button>`;
+    return `<button class="level-tile ${state}" data-action="select-level" data-level="${level.number}" ${disabled}><span class="tile-icon">${icon}</span><span>${level.number}</span><span class="sr-only">Level ${level.number}, ${escapeHTML(level.title)}, ${done ? 'completed' : current ? 'current' : locked ? 'locked' : 'available'}</span></button>`;
   }
 
   nextProblemInLevel(level) {
@@ -512,10 +538,10 @@ export class App {
     else if (action === 'export-code') this.exportCode();
     else if (action === 'output-tab') {
       this.ui.outputTab = button.dataset.tab;
-      this.render();
+      this.updateOutputPanel();
     } else if (action === 'clear-console') {
       this.ui.consoleText = '';
-      this.render();
+      this.updateOutputPanel();
     } else if (action === 'next-hint') this.revealHint(button.dataset.id);
     else if (action === 'show-solution') this.confirmSolution(button.dataset.id);
     else if (action === 'toggle-world') {
@@ -632,6 +658,18 @@ export class App {
           first.focus();
         }
       }
+    }
+    if (event.target.matches?.('[role="tab"][data-action="output-tab"]') &&
+        ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      const tabs = [...this.root.querySelectorAll('[role="tab"][data-action="output-tab"]')];
+      const currentIndex = tabs.indexOf(event.target);
+      const nextIndex = event.key === 'Home' ? 0
+        : event.key === 'End' ? tabs.length - 1
+          : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      this.ui.outputTab = tabs[nextIndex].dataset.tab;
+      this.updateOutputPanel();
+      tabs[nextIndex].focus();
     }
     if (event.target.id === 'code-editor') {
       if (event.key === 'Tab') {
@@ -1076,6 +1114,10 @@ export class App {
     textInput?.setAttribute('aria-label', `Python code editor for ${problem.title}`);
     textInput?.setAttribute('aria-describedby', 'editor-help');
     textInput?.setAttribute('aria-multiline', 'true');
+    textInput?.setAttribute('autocapitalize', 'off');
+    textInput?.setAttribute('autocomplete', 'off');
+    textInput?.setAttribute('autocorrect', 'off');
+    textInput?.setAttribute('spellcheck', 'false');
     editor.commands.addCommand({
       name: 'xpc-run-code',
       bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },

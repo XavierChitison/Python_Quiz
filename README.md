@@ -10,7 +10,7 @@ Xavier's Python Challenge is a free, local-first Python coding game. It is a sta
 - Pyodide Python runtime in a browser Web Worker
 - Daily challenge, timed interview practice, settings, and local progress
 - Saved drafts, JSON backup/restore, and Python-file export
-- Responsive layout, reduced-motion support, and opt-in procedural background music and sound effects
+- Responsive phone, tablet, and desktop layouts, keyboard navigation, reduced-motion support, and opt-in procedural background music and sound effects
 
 ## Run the app
 
@@ -34,7 +34,13 @@ node scripts/audit-curriculum.js
 
 `npm run serve:test` starts the small static test server used by Playwright. It can also serve the app under `/repo/` to verify repository subpaths. There is intentionally no Vite build or development-server requirement.
 
-The curriculum audit reports repeated descriptions, solutions, and test collections, plus AST similarity candidates for manual review. It currently exits with a failure because the existing curriculum contains duplicate solutions and lacks second examples. Passing reference executions alone do not establish that problems have distinct objectives.
+The curriculum validator checks all reference executions and required metadata. The separate audit checks duplicate candidates; AST similarity still requires human interpretation, and passing reference tests alone do not prove semantic uniqueness.
+
+## Accessibility and responsive testing
+
+The interface includes a skip link, semantic page landmarks, keyboard-operable controls, reduced-motion support, and layouts tested from 320px to 2560px. Key touch targets expand to 44px at tablet and phone widths. Read [ACCESSIBILITY_REPORT.md](./ACCESSIBILITY_REPORT.md) and [RESPONSIVE_TEST_REPORT.md](./RESPONSIVE_TEST_REPORT.md) for measured coverage and limitations.
+
+The reports describe Chromium and touch-device emulation only. No physical phone/tablet or screen reader was available, so this project does not claim complete WCAG conformance or verified mobile virtual-keyboard behavior.
 
 ## Python execution and privacy
 
@@ -46,6 +52,6 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md). GitHub Pages publishes from th
 
 See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for editor and Python-runtime notices.
 
-## Known limitation
+## Validation status
 
-The 500 challenge records pass structural and reference-execution checks, but much of the curriculum is still generated and repetitive rather than authored to distinct, topic-specific learning objectives. See [APPLICATION_AUDIT.md](./APPLICATION_AUDIT.md), [FEATURE_VERIFICATION.md](./FEATURE_VERIFICATION.md), [CURRICULUM_VALIDATION_REPORT.md](./CURRICULUM_VALIDATION_REPORT.md), and [TEST_REPORT.md](./TEST_REPORT.md) for implementation status and measured verification.
+See [TEST_REPORT.md](./TEST_REPORT.md) for the latest unit, browser, accessibility, and curriculum validation results. Automated checks sample routes and states; they do not replace manual assistive-technology, real-device, or full WCAG evaluation.
