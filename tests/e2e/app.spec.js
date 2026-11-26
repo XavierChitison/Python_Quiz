@@ -499,8 +499,10 @@ test('background music is opt-in and its controls and settings persist', async (
   await expect(page.getByRole('button', { name: 'Mute background music' })).toHaveAttribute('aria-pressed', 'false');
   await page.getByRole('button', { name: 'Pause background music' }).click();
   await expect(page.locator('#music-playback-status')).toHaveText('Paused');
+  await expect(music).toBeChecked();
   await page.getByRole('button', { name: 'Play background music' }).click();
   await expect(page.locator('#music-control-status')).toHaveText('Music on');
+  await expect(music).toBeChecked();
   await page.getByRole('link', { name: 'Problems', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await expect(page.locator('#music-track-name')).toHaveText('Digital Exploration');
@@ -508,6 +510,146 @@ test('background music is opt-in and its controls and settings persist', async (
   await page.goto('/#/settings');
   await expect(page.getByRole('checkbox', { name: 'Background Music' })).toBeChecked();
   expect(JSON.parse(await page.evaluate(() => localStorage.getItem('xpc-progress'))).settings.musicVolume).toBe(0.55);
+});
+
+test('mobile music toggle supports touch and keyboard without crowding the header', async ({ browser }) => {
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto('/#/settings');
+    const toggle = page.locator('.music-toggle');
+    const setting = page.getByRole('checkbox', { name: 'Background Music' });
+    await expect(setting).not.toBeChecked();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    const viewports = [
+      [320, 720], [360, 800], [375, 812], [390, 844], [414, 896], [430, 932],
+      [480, 900], [600, 960], [768, 1024], [820, 1180], [844, 390], [900, 600], [932, 430],
+      [1024, 768], [1280, 800], [1440, 900], [1920, 1080]
+    ];
+    for (const [width, height] of viewports) {
+      await page.setViewportSize({ width, height });
+      const geometry = await page.evaluate(() => {
+        const bounds = selector => {
+          const rect = document.querySelector(selector).getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+        };
+        const toggle = document.querySelector('.music-toggle');
+        const toggleBounds = toggle.getBoundingClientRect();
+        const summaryBounds = document.querySelector('.music-menu summary').getBoundingClientRect();
+        const intersects = (left, right) => left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top;
+        const hit = document.elementFromPoint((toggleBounds.left + toggleBounds.right) / 2, (toggleBounds.top + toggleBounds.bottom) / 2);
+        const groupBounds = bounds('.music-control-group');
+        const siblingBounds = [...document.querySelectorAll('.top-status > .status-chip, .top-status > .icon-button')].map(element => {
+          const rect = element.getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        });
+        return {
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: document.documentElement.clientWidth,
+          toggle: bounds('.music-toggle'),
+          menu: bounds('.music-menu summary'),
+          toggleMenuOverlap: intersects(toggleBounds, summaryBounds),
+          siblingOverlap: siblingBounds.some(sibling => intersects(groupBounds, sibling)),
+          hitTargetIsToggle: toggle.contains(hit)
+        };
+      });
+      expect(geometry.documentWidth, `header overflow at ${width}px`).toBeLessThanOrEqual(geometry.viewportWidth);
+      expect(geometry.toggleMenuOverlap, `music controls overlap at ${width}px`).toBe(false);
+      expect(geometry.siblingOverlap, `music control overlaps a sibling at ${width}px`).toBe(false);
+      expect(geometry.hitTargetIsToggle, `music toggle is obstructed at ${width}px`).toBe(true);
+      expect(geometry.toggle.width, `music toggle too narrow at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+      expect(geometry.toggle.height, `music toggle too short at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+      expect(geometry.menu.width, `music menu trigger too narrow at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+      expect(geometry.menu.height, `music menu trigger too short at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(toggle).toHaveAttribute('aria-label', /Music on|Tap to start|Audio unavailable|Music muted/);
+    await expect(setting).toBeChecked();
+    expect(JSON.parse(await page.evaluate(() => localStorage.getItem('xpc-progress'))).settings.musicEnabled).toBe(true);
+    const playbackDescription = await page.locator('#music-control-status').innerText();
+    expect(['Music on', 'Music muted', 'Music paused', 'Tap to start', 'Audio unavailable']).toContain(playbackDescription);
+
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(setting).not.toBeChecked();
+
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(setting).toBeChecked();
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(setting).not.toBeChecked();
+
+    await toggle.tap();
+    await expect(setting).toBeChecked();
+    await page.reload();
+    await expect(page.getByRole('checkbox', { name: 'Background Music' })).toBeChecked();
+    await expect(page.locator('.music-toggle')).toHaveAttribute('aria-pressed', 'true');
+  } finally {
+    await context.close();
+  }
+});
+
+test('header music toggle reports blocked playback and retries from a user gesture', async ({ page }) => {
+  await page.addInitScript(() => {
+    const makeParam = () => ({
+      value: 0,
+      setValueAtTime(value) { this.value = value; },
+      setTargetAtTime(value) { this.value = value; },
+      exponentialRampToValueAtTime(value) { this.value = value; },
+      cancelScheduledValues() {}
+    });
+    class AudioNode {
+      constructor() {
+        this.gain = makeParam();
+        this.frequency = makeParam();
+        this.Q = makeParam();
+      }
+      connect() {}
+      disconnect() {}
+      start() {}
+      stop() {}
+      addEventListener() {}
+    }
+    class ControlledAudioContext {
+      state = 'suspended';
+      currentTime = 0;
+      destination = {};
+      createGain() { return new AudioNode(); }
+      createOscillator() { return new AudioNode(); }
+      createBiquadFilter() { return new AudioNode(); }
+      resume() {
+        if (!window.__xpcAllowMusicResume) {
+          return Promise.reject(Object.assign(new Error('Audio playback requires a user gesture.'), { name: 'NotAllowedError' }));
+        }
+        this.state = 'running';
+        return Promise.resolve();
+      }
+    }
+    window.__xpcAllowMusicResume = false;
+    window.AudioContext = ControlledAudioContext;
+  });
+  await page.goto('/');
+  const toggle = page.locator('.music-toggle');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAttribute('aria-label', 'Tap to start (background music)');
+  await expect(page.locator('#music-control-status-compact')).toHaveText('Retry');
+
+  await page.evaluate(() => { window.__xpcAllowMusicResume = true; });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-label', 'Music on (background music)');
+  await expect(page.locator('#music-playback-status')).toHaveText('Playing');
 });
 
 test('real Python execution remains available in the shared workspace', async ({ page }) => {

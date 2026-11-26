@@ -1,12 +1,12 @@
-import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.2';
+import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.3';
 import {
   clearApplicationData, createDefaultProgress, exportBackup, getDraft, normalizeProgress,
   progressSnapshot, saveDraft, saveProgress, validateBackup
-} from './services/storage.js?v=2.4.2';
-import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.2';
-import { runPython, stopPython } from './services/python-runner.js?v=2.4.2';
-import { audioController, playSound } from './services/audio.js?v=2.4.2';
-import { celebrate } from './services/effects.js?v=2.4.2';
+} from './services/storage.js?v=2.4.3';
+import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.3';
+import { runPython, stopPython } from './services/python-runner.js?v=2.4.3';
+import { audioController, playSound } from './services/audio.js?v=2.4.3';
+import { celebrate } from './services/effects.js?v=2.4.3';
 
 const REMOVED_ROUTES = new Set([
   'dashboard', 'roadmap', 'generator', 'playground', 'debugging', 'prediction',
@@ -59,7 +59,10 @@ export class App {
     this.editor = null;
     this.editorProblemId = null;
     this.audioUnsubscribe = audioController.subscribe(state => this.updateAudioControls(state));
-    this.audioGestureHandler = () => audioController.unlock();
+    this.audioGestureHandler = event => {
+      if (event.target instanceof Element && event.target.closest('[data-action="music-toggle"]')) return;
+      audioController.unlock();
+    };
     document.addEventListener('pointerdown', this.audioGestureHandler, { passive: true });
     document.addEventListener('keydown', this.audioGestureHandler);
     audioController.applySettings(this.progress.settings);
@@ -205,18 +208,25 @@ export class App {
         <div class="top-status">
           <span class="status-chip"><strong>LV ${currentLevel(this.progress)}</strong></span>
           <span class="status-chip" title="Consecutive local calendar days practiced">🔥 ${this.progress.profile.streak || 0}</span>
-          <details class="music-menu">
-            <summary><span aria-hidden="true">♫</span><span id="music-control-status">Music off</span></summary>
-            <div class="music-popover" aria-label="Background music controls">
-              <p><strong id="music-track-name">Coding Focus</strong><span id="music-playback-status" role="status">Music is off</span></p>
-              <div class="music-actions">
-                <button class="icon-button" data-action="music-playback" aria-label="Enable background music">▶</button>
-                <button class="icon-button" data-action="music-mute" aria-label="Mute background music" aria-pressed="false">◖</button>
-                <button class="icon-button" data-action="music-next" aria-label="Play next music track">⏭</button>
+          <div class="music-control-group">
+            <button class="music-toggle" type="button" data-action="music-toggle" aria-label="Music off (background music)" aria-pressed="false" title="Music off">
+              <span class="music-toggle-icon" aria-hidden="true">♪</span>
+              <span id="music-control-status" class="music-status-full">Music off</span>
+              <span id="music-control-status-compact" class="music-status-compact" aria-hidden="true">Off</span>
+            </button>
+            <details class="music-menu">
+              <summary aria-label="More music controls" title="More music controls"><span aria-hidden="true">...</span></summary>
+              <div class="music-popover" aria-label="Background music controls">
+                <p><strong id="music-track-name">Coding Focus</strong><span id="music-playback-status" role="status">Music is off</span></p>
+                <div class="music-actions">
+                  <button class="icon-button" data-action="music-playback" aria-label="Enable background music">▶</button>
+                  <button class="icon-button" data-action="music-mute" aria-label="Mute background music" aria-pressed="false">◖</button>
+                  <button class="icon-button" data-action="music-next" aria-label="Play next music track">⏭</button>
+                </div>
+                <label class="music-volume"><span>Music volume</span><input type="range" min="0" max="1" step="0.01" data-setting="musicVolume" aria-label="Music volume" aria-valuetext="${Math.round(this.progress.settings.musicVolume * 100)}%"><output data-value-for="musicVolume">${Math.round(this.progress.settings.musicVolume * 100)}%</output></label>
               </div>
-              <label class="music-volume"><span>Music volume</span><input type="range" min="0" max="1" step="0.01" data-setting="musicVolume" aria-label="Music volume" aria-valuetext="${Math.round(this.progress.settings.musicVolume * 100)}%"><output data-value-for="musicVolume">${Math.round(this.progress.settings.musicVolume * 100)}%</output></label>
-            </div>
-          </details>
+            </details>
+          </div>
           <button class="icon-button" data-action="sound-toggle" aria-label="${this.progress.settings.soundEnabled ? 'Mute sound effects' : 'Enable sound effects'}" aria-pressed="${Boolean(this.progress.settings.soundEnabled)}">${this.progress.settings.soundEnabled ? '♫' : '♪'}</button>
         </div>
       </header>
@@ -510,6 +520,12 @@ export class App {
       this.updateSetting('soundEnabled', !this.progress.settings.soundEnabled, false);
       if (this.progress.settings.soundEnabled) playSound('click', this.progress.settings, true);
       this.render();
+    } else if (action === 'music-toggle') {
+      if (audioController.getState().status === 'blocked' && this.progress.settings.musicEnabled) {
+        audioController.unlock();
+      } else {
+        this.updateSetting('musicEnabled', !this.progress.settings.musicEnabled, false);
+      }
     } else if (action === 'music-playback') {
       if (audioController.getState().playing) {
         this.progress.settings.musicPaused = true;
@@ -1154,11 +1170,31 @@ export class App {
 
   updateAudioControls(state) {
     const status = this.root.querySelector('#music-control-status');
+    const compactStatus = this.root.querySelector('#music-control-status-compact');
+    const musicToggle = this.root.querySelector('[data-action="music-toggle"]');
+    const musicIcon = this.root.querySelector('.music-toggle-icon');
+    const musicSetting = this.root.querySelector('[data-setting="musicEnabled"]');
     const playbackStatus = this.root.querySelector('#music-playback-status');
     const track = this.root.querySelector('#music-track-name');
     const playButton = this.root.querySelector('[data-action="music-playback"]');
     const muteButton = this.root.querySelector('[data-action="music-mute"]');
-    if (status) status.textContent = state.playing ? state.muted ? 'Music muted' : 'Music on' : state.status === 'blocked' ? 'Tap to start' : 'Music off';
+    const statusText = state.playing
+      ? state.muted ? 'Music muted' : 'Music on'
+      : state.status === 'blocked' ? 'Tap to start'
+        : state.status === 'unavailable' ? 'Audio unavailable'
+          : state.enabled ? 'Music paused' : 'Music off';
+    if (status) status.textContent = statusText;
+    if (compactStatus) compactStatus.textContent = state.status === 'blocked' ? 'Retry'
+      : state.status === 'unavailable' ? 'Unavailable'
+        : state.enabled ? state.playing ? state.muted ? 'Muted' : 'On' : 'Paused'
+          : 'Off';
+    if (musicToggle) {
+      musicToggle.setAttribute('aria-label', `${statusText} (background music)`);
+      musicToggle.setAttribute('aria-pressed', String(state.enabled));
+      musicToggle.title = statusText;
+    }
+    if (musicSetting) musicSetting.checked = state.enabled;
+    if (musicIcon) musicIcon.textContent = state.enabled ? '♫' : '♪';
     if (playbackStatus) {
       playbackStatus.textContent = state.playing ? state.muted ? 'Playing (muted)' : 'Playing' : state.status === 'blocked'
         ? 'Playback is waiting for a user gesture.'

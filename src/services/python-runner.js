@@ -7,7 +7,7 @@ let requestId = 0;
 let activeRequest = null;
 
 function createWorker() {
-  worker = new Worker(new URL('../workers/python.worker.js?v=2.4.2', import.meta.url));
+  worker = new Worker(new URL('../workers/python.worker.js?v=2.4.3', import.meta.url));
   worker.onmessage = handleWorkerMessage;
   worker.onerror = event => {
     const error = new Error(event.message || 'The Python worker failed.');

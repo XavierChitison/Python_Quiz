@@ -18,7 +18,7 @@ class FakeAudioNode {
   }
   connect() {}
   disconnect() {}
-  start() {}
+  start() { this.startCount = (this.startCount || 0) + 1; }
   stop() {}
   addEventListener(name, listener) { this.listeners.set(name, listener); }
 }
@@ -29,11 +29,13 @@ class FakeAudioContext {
   destination = {};
   nodes = [];
   resumeError = null;
+  resumeGate = null;
   createGain() { return this.addNode(new FakeAudioNode()); }
   createOscillator() { return this.addNode(new FakeAudioNode()); }
   createBiquadFilter() { return this.addNode(new FakeAudioNode()); }
   async resume() {
     if (this.resumeError) throw this.resumeError;
+    if (this.resumeGate) await this.resumeGate;
     this.state = 'running';
   }
   addNode(node) {
@@ -42,14 +44,15 @@ class FakeAudioContext {
   }
 }
 
-function installAudioEnvironment({ resumeError = null } = {}) {
+function installAudioEnvironment({ resumeError = null, resumeGate = null } = {}) {
   const contexts = [];
   const fakeWindow = {
     AudioContext: class extends FakeAudioContext {
       constructor() {
         super();
         this.resumeError = resumeError;
-        if (resumeError) this.state = 'suspended';
+        this.resumeGate = resumeGate;
+        if (resumeError || resumeGate) this.state = 'suspended';
         contexts.push(this);
       }
     },
@@ -110,6 +113,36 @@ describe('original browser audio controller', () => {
     expect(audio.getState().playing).toBe(true);
     expect(context).toBe(contexts[0]);
     audio.pauseMusic('paused');
+  });
+
+  it('starts only one track after rapid settings changes during audio resume', async () => {
+    let resolveResume;
+    const resumeGate = new Promise(resolve => { resolveResume = resolve; });
+    const { contexts } = installAudioEnvironment({ resumeGate });
+    const audio = new AudioController();
+
+    audio.applySettings({ musicEnabled: true, autoTrackSwitch: false });
+    audio.applySettings({ musicEnabled: false, autoTrackSwitch: false });
+    audio.applySettings({ musicEnabled: true, autoTrackSwitch: false });
+    resolveResume();
+
+    await vi.waitFor(() => expect(audio.getState()).toMatchObject({ playing: true, status: 'playing' }));
+    expect(contexts[0].nodes.filter(node => node.startCount > 0)).toHaveLength(3);
+    audio.pauseMusic('off');
+  });
+
+  it('does not start music if it is disabled while audio resume is pending', async () => {
+    let resolveResume;
+    const resumeGate = new Promise(resolve => { resolveResume = resolve; });
+    const { contexts } = installAudioEnvironment({ resumeGate });
+    const audio = new AudioController();
+
+    audio.applySettings({ musicEnabled: true, autoTrackSwitch: false });
+    audio.applySettings({ musicEnabled: false, autoTrackSwitch: false });
+    resolveResume();
+
+    await vi.waitFor(() => expect(audio.getState()).toMatchObject({ playing: false, status: 'off' }));
+    expect(contexts[0].nodes.filter(node => node.startCount > 0)).toHaveLength(0);
   });
 
   it('reports autoplay blocking and recovers on a later user gesture', async () => {

@@ -38,6 +38,7 @@ export class AudioController {
     this.trackIndex = 0;
     this.noteIndex = 0;
     this.playing = false;
+    this.startPromise = null;
     this.status = 'off';
     this.lastEffectAt = new Map();
     this.autoSwitchTimer = 0;
@@ -116,10 +117,23 @@ export class AudioController {
 
   async startMusic() {
     if (!this.settings.musicEnabled || this.settings.musicPaused || this.playing) return;
+    if (this.startPromise) return this.startPromise;
+    const attempt = this.startMusicAttempt();
+    if (this.playing) return;
+    this.startPromise = attempt;
+    try {
+      await attempt;
+    } finally {
+      if (this.startPromise === attempt) this.startPromise = null;
+    }
+  }
+
+  async startMusicAttempt() {
     try {
       const context = this.ensureContext();
       if (!context) return;
       if (context.state !== 'running') await context.resume();
+      if (!this.settings.musicEnabled || this.settings.musicPaused) return;
       if (context.state !== 'running') throw new Error('Audio playback is waiting for a user gesture.');
       this.playing = true;
       this.status = 'playing';
@@ -128,6 +142,7 @@ export class AudioController {
       this.scheduleTrackSwitch();
       this.notify();
     } catch (error) {
+      if (!this.settings.musicEnabled || this.settings.musicPaused) return;
       this.playing = false;
       this.status = error.name === 'NotAllowedError' ? 'blocked' : 'unavailable';
       this.handlePlaybackError(error);
@@ -268,7 +283,7 @@ export class AudioController {
     const track = this.activeTrack;
     this.activeTrack = null;
     this.retireTrack(track, 0.7);
-    if (this.settings.musicEnabled || status !== 'off') this.status = status;
+    this.status = status;
     this.updateMusicGain(0.5);
     this.notify();
   }

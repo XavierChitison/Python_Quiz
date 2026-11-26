@@ -48,8 +48,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .status-chip strong { color: var(--purple-light); }
 .icon-button { min-width: 36px; min-height: 36px; display: inline-grid; place-items: center; padding: 0 9px; color: var(--muted); border: 1px solid var(--line); border-radius: 9px; background: var(--surface); transition: .16s ease; }
 .icon-button:hover { color: var(--text); border-color: #53617a; background: var(--surface-raised); }
+.music-control-group { display: flex; align-items: center; gap: 4px; }
+.music-toggle, .music-menu summary { min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; color: #d7ddec; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.025); cursor: pointer; font-size: 11px; list-style: none; white-space: nowrap; }
+.music-toggle:hover, .music-menu summary:hover { border-color: #53617a; background: var(--surface-raised); }
+.music-toggle-icon { color: var(--purple-light); font-size: 15px; }
+.music-status-compact { display: none; }
 .music-menu { position: relative; }
-.music-menu summary { min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; color: #d7ddec; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.025); cursor: pointer; font-size: 11px; list-style: none; white-space: nowrap; }
+.music-menu summary { width: 34px; justify-content: center; padding: 0; }
 .music-menu summary::-webkit-details-marker { display: none; }
 .music-menu summary span:first-child { color: var(--purple-light); font-size: 15px; }
 .music-popover { position: absolute; z-index: 25; top: calc(100% + 8px); right: 0; width: min(290px,calc(100vw - 24px)); padding: 13px; border: 1px solid #38445a; border-radius: 12px; background: #111827; box-shadow: 0 14px 36px #000b; }
@@ -271,15 +276,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 @media (max-width: 1120px) {
   .workspace-grid { grid-template-columns: 190px minmax(260px,.9fr) minmax(340px,1.1fr); }
-  .topbar { gap: 10px; }
-  .nav-link { padding-inline: 8px; font-size: 11px; }
+  .topbar { gap: 8px; }
+  .nav-link { padding-inline: 6px; font-size: 10px; }
+  .top-status { gap: 6px; }
+  .status-chip { padding-inline: 7px; }
 }
 @media (max-width: 900px) {
   .topbar { flex-wrap: wrap; gap: 8px 14px; padding-block: max(9px,env(safe-area-inset-top)) max(9px,env(safe-area-inset-bottom)); }
   .primary-nav { order: 3; width: 100%; justify-content: center; overflow-x: auto; }
   .top-status { margin-left: auto; }
-  .nav-link, .icon-button, .music-menu summary, .button, .hint-actions button, .output-tab-button, .problem-dot, .level-tile, .assessment-question { min-height: 44px; }
-  .icon-button, .problem-dot, .level-tile, .assessment-question { min-width: 44px; }
+  .nav-link, .icon-button, .music-toggle, .music-menu summary, .button, .hint-actions button, .output-tab-button, .problem-dot, .level-tile, .assessment-question { min-height: 44px; }
+  .icon-button, .music-menu summary, .problem-dot, .level-tile, .assessment-question { min-width: 44px; }
+  .music-menu summary { width: 44px; }
   .editor-panel .editor-tools .icon-button { min-width: 44px; min-height: 44px; }
   .hint-box summary, .test-case summary { min-height: 44px; }
   .music-volume input { min-height: 44px; }
@@ -306,6 +314,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .brand-name { min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
   .brand img { width: 31px; height: 31px; }
   .top-status .status-chip:first-child { display: none; }
+  .music-toggle { gap: 5px; padding-inline: 8px; }
+  .music-status-full { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+  .music-status-compact { display: inline; }
   .primary-nav { justify-content: flex-start; flex-wrap: wrap; overflow: visible; }
   .nav-link { min-width: max-content; padding-inline: 10px; }
   .main-content { padding: 12px max(9px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left)); }
