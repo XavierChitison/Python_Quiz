@@ -15,6 +15,8 @@ import { functions6165Challenges } from './functions-61-65.js';
 import { matrices6670Challenges } from './matrices-66-70.js';
 import { search7175Challenges } from './search-71-75.js';
 import { algorithms7680Challenges } from './algorithms-76-80.js';
+import { structures8185Challenges } from './structures-81-85.js';
+import { trees8690Challenges } from './trees-86-90.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -38,7 +40,7 @@ export const levelTopics = [
   'Dictionary fundamentals','Frequencies and lookups','Set applications','Grouping and keyed records','Dictionary operations','Multisets and indexing','Frequency algorithms','Sparse data','Graph mappings','Dictionary applications',
   'Defining functions','Callable parameters','Function applications','Matrix fundamentals','Square matrices','Matrix properties','Grid rules','Matrix algorithms','Numerical functions','Linear algebra',
   'Binary search on answers','Sorting and inversions','Search in structured data','Divide-and-conquer and heaps','Selection and stream statistics','Two-pointer algorithms','Number theory algorithms','Greedy interval algorithms','Advanced window algorithms','Parametric search and graphs',
-  'Stacks','Stack problems','Queues','Linked list basics','Linked list traversal','Linked list manipulation','Recursion basics','Recursive problems','Binary trees','Tree traversal',
+  'Recursion fundamentals','Nested recursion','Stack applications','Monotonic stacks','Queue applications','Binary tree paths','Binary tree recursion','Binary search trees','Tree traversal','Trees and tries',
   'Graphs','Breadth-first search','Depth-first search','Backtracking','Combinations','Greedy algorithms','Dynamic programming','One-dimensional DP','Advanced DP','Final assessment'
 ];
 
@@ -122,7 +124,8 @@ function makeProblem(level, index) {
     lists4145Challenges[id] || lists4650Challenges[id] ||
     collections5155Challenges[id] || collections5660Challenges[id] ||
     functions6165Challenges[id] || matrices6670Challenges[id] ||
-    search7175Challenges[id] || algorithms7680Challenges[id];
+    search7175Challenges[id] || algorithms7680Challenges[id] ||
+    structures8185Challenges[id] || trees8690Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }
