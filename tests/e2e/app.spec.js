@@ -717,6 +717,12 @@ test('workspace, levels, and settings reflow without horizontal page overflow', 
           return tile && tile.getBoundingClientRect().height >= 43.5;
         });
       }
+      if (route.endsWith('settings') && width <= 620) {
+        await page.waitForFunction(() => {
+          const grid = document.querySelector('.setting-grid');
+          return grid && getComputedStyle(grid).gridTemplateColumns.split(' ').length === 1;
+        });
+      }
       const widths = await page.evaluate(() => ({
         document: document.documentElement.scrollWidth,
         viewport: document.documentElement.clientWidth
