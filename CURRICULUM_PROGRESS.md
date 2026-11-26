@@ -13,13 +13,13 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 - Batch 7 (levels 61–70): implemented and reference-tested; 50 replacements.
 - Batch 8 (levels 71–80): implemented and reference-tested; 50 replacements.
 - Batch 9 (levels 81–90): implemented and reference-tested; 50 replacements.
-- Later batches have independent drafts in progress but are not integrated or validated as complete batches.
-- 50 problem records still need replacement and review against the full requirements.
-- Cross-curriculum semantic uniqueness remains unverified.
+- Batch 10 (levels 91–100): implemented and reference-tested; 50 replacements.
+- All 500 replacement records are integrated; final validation and deployment are pending.
+- Cross-curriculum objective review identified two superficial duplicates, which were replaced; automated duplicate detection cannot prove semantic uniqueness.
 
 ## Implemented objectives
 
-All entries below have two explained examples, eight manually specified tests, a reference solution, and content revision 1. Each uses standard input and output.
+All entries below have two explained examples, eight manually specified tests, and a reference solution. Each uses standard input and output.
 
 | Existing ID | Objective | Concepts / approach | Validation |
 | --- | --- | --- | --- |
@@ -67,7 +67,7 @@ All entries below have two explained examples, eight manually specified tests, a
 | level-09-problem-2 | Lowercase text | Convert ASCII letters to lowercase | Pyodide cases passed |
 | level-09-problem-3 | Trim outer whitespace | Remove outer ASCII spaces but preserve other characters | Pyodide cases passed |
 | level-09-problem-4 | Replace spaces with hyphens | Replace each ASCII space without collapsing | Pyodide cases passed |
-| level-09-problem-5 | First three characters | Prefix slice, including short lines | Pyodide cases passed |
+| level-09-problem-5 | Mask all but the last four characters | Combine a repeated mask and an unchanged suffix | Pyodide cases passed |
 | level-10-problem-1 | Format two initials | Extract and capitalize initials with punctuation | Pyodide cases passed |
 | level-10-problem-2 | Weighted average of two scores | Apply complementary percentage weights | Pyodide cases passed |
 | level-10-problem-3 | Update an account balance | Add a deposit and subtract a withdrawal | Pyodide cases passed |
@@ -92,6 +92,10 @@ Batch 8 adds binary search, sorting, number theory, greedy algorithms, and slidi
 
 Batch 9 adds recursion, stacks, queues, binary trees, and tries. Each has two explained examples and eight cases.
 
+Batch 10 adds graph algorithms, backtracking, dynamic programming, and advanced assessments. Each has two explained examples and eight cases.
+
+The final semantic review replaced the duplicate prefix and division objectives at levels 9-5 and 14-4 with masking and arithmetic-sequence classification. Their content revision is 2 so prior accepted solutions remain historical and saved drafts remain recoverable.
+
 ## Compatibility
 
 IDs, draft keys, and level unlocks remain unchanged. Old completions for revised problems are archived separately and are not treated as passing the replacement. Previously completed levels, assessment answers and submissions, and daily completion dates are retained as history; earned XP, streaks, and daily rewards remain intact. Existing drafts remain under their original keys and may need editing for the replacement problem. Re-solving a replacement can award its normal XP again.
@@ -110,6 +114,7 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Targeted Batch 7 tests: 23 tests passed, including progress migration and independent expected-output checks; all 400/400 Batch 7 reference cases passed in Pyodide and all 50 starters ran successfully. Additional checks covered 482 function boundaries and 3,920 exact trapezoid-rounding inputs.
 - Targeted Batch 8 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
 - Targeted Batch 9 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
+- Targeted Batch 10 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
 - Before Batch 7, `npm run validate:problems` passed 4,001/4,001 cases, including 200 then-generated placeholders; this does not establish content completeness or semantic uniqueness. The generated validation report predates Batch 7.
 - Independent boundary checks passed for 1,480 calendar-date, half-open interval, and rotatable-rectangle inputs.
 - Batch 2 cases rejected five representative incorrect approaches involving switch states, degenerate triangles, filename suffixes, empty intervals, and rectangle rotation.
@@ -122,12 +127,15 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Batch 7: 1,779 independent matrix and linear-equation property checks passed, including 300 diagonal-sorting cases.
 - Batch 8: 1,655 independent search, scheduling, window, and graph property checks passed.
 - Batch 9: 750 independent tree property checks passed.
+- Batch 10: 500 independent enclosed-water and traveling-tour checks passed.
+- Level 14-4: the revised reference passed its eight cases and 1,000 additional generated cases in Pyodide; revision-one migration was tested.
+- Level 9-5: the revised reference passed its eight cases and 500 additional generated cases in Pyodide; revision-one migration was tested.
 - Alternating harmonic-sum rounding was independently checked for all 20 permitted positive term counts.
 - Full browser regression: 28 tests passed before the example-description adjustment and later curriculum changes. Focused browser checks subsequently passed for old progress migration, the new first problem and level progression, and whitespace-preserving multiline output.
 - Representative incorrect solutions for the first problem and all 35 level 4–10 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
-- The duplicate audit of levels 1–90 found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. The remaining 50 generated records have not been replaced. Normalized AST matches are review candidates, not conclusive semantic duplicates.
+- The duplicate audit of all 500 records found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Continue Batch 10 from `level-91-problem-1`, reviewing and integrating its drafts. Do not publish until all batches and regression tests pass.
+Run the full reference suite, unit tests, and browser regression. Update cache versions before deployment. Do not publish until final checks pass.

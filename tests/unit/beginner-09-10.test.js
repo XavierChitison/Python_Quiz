@@ -6,7 +6,8 @@ const independentlyCalculate = {
   'level-09-problem-2': input => input.slice(0, -1).toLowerCase(),
   'level-09-problem-3': input => input.slice(0, -1).replace(/^ +| +$/g, ''),
   'level-09-problem-4': input => input.slice(0, -1).replace(/ /g, '-'),
-  'level-09-problem-5': input => input.slice(0, -1).slice(0, 3),
+  'level-09-problem-5': input => [...input.slice(0, -1)].map((character, index, text) =>
+    index < text.length - 4 ? '*' : character).join(''),
   'level-10-problem-1': input => input.trim().split(/ +/).map(name => `${name[0].toUpperCase()}.`).join(''),
   'level-10-problem-2': input => {
     const [first, second, weight] = input.trim().split(/\s+/).map(Number);
@@ -52,7 +53,7 @@ describe('beginner levels 9 and 10 challenges', () => {
       const cases = [...problem.publicTestCases, ...problem.hiddenTestCases];
       expect(cases).toHaveLength(8);
       expect(new Set(cases.map(({ input }) => input)).size, `${id} inputs`).toBe(8);
-      expect(problem.contentRevision).toBe(1);
+      expect(problem.contentRevision).toBe(id === 'level-09-problem-5' ? 2 : 1);
       expect(problem.examples).toHaveLength(2);
       expect(problem.examples.every(example => example.explanation)).toBe(true);
       expect(problem.hints).toHaveLength(5);

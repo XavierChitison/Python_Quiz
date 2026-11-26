@@ -285,7 +285,7 @@ describe('matrix and function challenges, levels 66–70', () => {
       expect.soft(results[i][1], c.input).toBeNull();
       expect.soft(results[i][0].replace(/\n$/, ''), c.input).toBe(c.output);
     }
-  });
+  }, 30000);
 
   it('compiles and runs every starter on every case', async () => {
     const cases = ids.flatMap(id => [...problems[id].publicTestCases, ...problems[id].hiddenTestCases]

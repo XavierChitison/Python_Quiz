@@ -305,23 +305,27 @@ export const conditions1115Challenges = {
     'The tax is 10% of the portion up to 10000 plus 20% of only the remaining income.',
     "income = int(input())\n\n# Calculate each band's tax separately and print two decimal places.\n"
   ),
-  'level-14-problem-4': challenge(
-    'Safe Integer Division',
-    'Divide one integer by another using floor division, but handle a zero divisor instead of attempting the division.',
-    'Two integers dividend and divisor on one line.',
-    'Print Error if divisor is zero; otherwise print dividend // divisor.',
-    ['-100000 <= dividend <= 100000.','-1000 <= divisor <= 1000.'],
-    [
-      ['17 5\n', '3', '17 // 5 is 3, so print the floor quotient.'],
-      ['8 0\n', 'Error', 'The divisor is zero, so report Error rather than dividing.'],
-      ['-7 3\n', '-3'], ['7 -3\n', '-3'], ['-8 -3\n', '2'],
-      ['12 3\n', '4'], ['0 9\n', '0'], ['1 1000\n', '0']
-    ],
-    ['Check the divisor before using //.', 'Compare it with zero.','When the divisor is zero, print the exact word Error.','Otherwise use Python floor division //, not /.','Floor division rounds toward negative infinity for negative quotients.'],
-    "dividend, divisor = map(int, input().split())\nif divisor == 0:\n    print('Error')\nelse:\n    print(dividend // divisor)\n",
-    'The zero check prevents invalid division; every nonzero divisor uses floor division.',
-    'dividend, divisor = map(int, input().split())\n\n# Guard against a zero divisor before calculating the quotient.\n'
-  ),
+  'level-14-problem-4': {
+    ...challenge(
+      'Classify Three-Term Arithmetic Sequence',
+      'Decide whether three integers in their given order form an arithmetic sequence. If they do, classify it by whether its common difference is positive, negative, or zero.',
+      'Three integers a b c on one line, in sequence order.',
+      'Print Increasing, Decreasing, or Constant when consecutive differences match; otherwise print Not arithmetic.',
+      ['-10000 <= a, b, c <= 10000.'],
+      [
+        ['1 3 5\n', 'Increasing', 'Both differences are 2, which is positive.'],
+        ['9 5 1\n', 'Decreasing', 'Both differences are -4, which is negative.'],
+        ['2 2 2\n', 'Constant'], ['1 3 6\n', 'Not arithmetic'],
+        ['-4 -1 2\n', 'Increasing'], ['3 0 -3\n', 'Decreasing'],
+        ['0 0 1\n', 'Not arithmetic'], ['1000 -1000 -3000\n', 'Decreasing']
+      ],
+      ['Find the difference from the first term to the second.', 'Find the difference from the second term to the third.', 'Different differences mean the sequence is not arithmetic.', 'Otherwise check whether the common difference is positive, negative, or zero.', 'Print the corresponding classification exactly as specified.'],
+      "a, b, c = map(int, input().split())\nfirst = b - a\nsecond = c - b\nif first != second:\n    print('Not arithmetic')\nelif first > 0:\n    print('Increasing')\nelif first < 0:\n    print('Decreasing')\nelse:\n    print('Constant')\n",
+      'Equal consecutive differences define an arithmetic sequence; their sign determines its classification.',
+      'a, b, c = map(int, input().split())\n\n# Compare the consecutive differences and classify the sequence.\n'
+    ),
+    contentRevision: 2
+  },
   'level-14-problem-5': challenge(
     'Solve a Linear Equation',
     'Classify the solutions of the equation a*x + b = 0 for integer coefficients a and b.',

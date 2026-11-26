@@ -17,6 +17,8 @@ import { search7175Challenges } from './search-71-75.js';
 import { algorithms7680Challenges } from './algorithms-76-80.js';
 import { structures8185Challenges } from './structures-81-85.js';
 import { trees8690Challenges } from './trees-86-90.js';
+import { graphs9195Challenges } from './graphs-91-95.js';
+import { advanced96100Challenges } from './advanced-96-100.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -41,7 +43,7 @@ export const levelTopics = [
   'Defining functions','Callable parameters','Function applications','Matrix fundamentals','Square matrices','Matrix properties','Grid rules','Matrix algorithms','Numerical functions','Linear algebra',
   'Binary search on answers','Sorting and inversions','Search in structured data','Divide-and-conquer and heaps','Selection and stream statistics','Two-pointer algorithms','Number theory algorithms','Greedy interval algorithms','Advanced window algorithms','Parametric search and graphs',
   'Recursion fundamentals','Nested recursion','Stack applications','Monotonic stacks','Queue applications','Binary tree paths','Binary tree recursion','Binary search trees','Tree traversal','Trees and tries',
-  'Graphs','Breadth-first search','Depth-first search','Backtracking','Combinations','Greedy algorithms','Dynamic programming','One-dimensional DP','Advanced DP','Final assessment'
+  'Graph traversal','Graph cycles and ordering','Weighted graph algorithms','Grid graphs','Backtracking enumeration','Constraint search','Dynamic programming foundations','Subsequence dynamic programming','Advanced dynamic programming','Final algorithms'
 ];
 
 const starter = (kind = 'stdin') => kind === 'function'
@@ -125,7 +127,8 @@ function makeProblem(level, index) {
     collections5155Challenges[id] || collections5660Challenges[id] ||
     functions6165Challenges[id] || matrices6670Challenges[id] ||
     search7175Challenges[id] || algorithms7680Challenges[id] ||
-    structures8185Challenges[id] || trees8690Challenges[id];
+    structures8185Challenges[id] || trees8690Challenges[id] ||
+    graphs9195Challenges[id] || advanced96100Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }

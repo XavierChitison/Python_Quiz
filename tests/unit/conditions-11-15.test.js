@@ -68,8 +68,8 @@ const independentlyCalculate = {
     return (Math.min(income, 10000) * 0.1 + Math.max(0, income - 10000) * 0.2).toFixed(2);
   },
   'level-14-problem-4': input => {
-    const [dividend, divisor] = integerValues(input);
-    return divisor === 0 ? 'Error' : String(Math.floor(dividend / divisor));
+    const [a, b, c] = integerValues(input);
+    return b - a !== c - b ? 'Not arithmetic' : b > a ? 'Increasing' : b < a ? 'Decreasing' : 'Constant';
   },
   'level-14-problem-5': input => {
     const [a, b] = integerValues(input);
@@ -114,7 +114,7 @@ describe('conditional and Boolean challenges for levels 11 through 15', () => {
       const cases = [...problem.publicTestCases, ...problem.hiddenTestCases];
       expect(cases, `${id} case count`).toHaveLength(8);
       expect(new Set(cases.map(({ input }) => input)).size, `${id} distinct inputs`).toBe(8);
-      expect(problem.contentRevision, `${id} revision`).toBe(1);
+      expect(problem.contentRevision, `${id} revision`).toBe(id === 'level-14-problem-4' ? 2 : 1);
       expect(problem.description, `${id} description`).toBeTruthy();
       expect(problem.inputFormat, `${id} input format`).toBeTruthy();
       expect(problem.outputFormat, `${id} output format`).toBeTruthy();

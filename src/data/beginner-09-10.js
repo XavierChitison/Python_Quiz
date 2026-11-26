@@ -85,27 +85,30 @@ export const beginner0910Challenges = {
     "replace(' ', '-') substitutes every ordinary space, including repeated and outer spaces, with a hyphen.",
     'text = input()\n\n# Replace each ordinary space with a hyphen and print the result.\n'
   ),
-  'level-09-problem-5': challenge(
-    'First Three Characters',
-    'Read one line of ASCII text and print its first three characters, or the whole line if it is shorter than three characters.',
-    'One line of ASCII text, which may be empty and may contain spaces.',
-    'Print at most the first three characters of the line.',
-    ['The line contains at most 100 ASCII characters.', 'Spaces count as characters.', 'If the line has fewer than three characters, print all of it.'],
-    [
-      ['abcdef\n', 'abc', 'The first three characters of abcdef are abc.'],
-      ['Hi\n', 'Hi', 'The line has only two characters, so both are printed.'],
-      ['\n', ''],
-      ['ab\n', 'ab'],
-      ['A B C\n', 'A B', 'The space is the second character and counts toward the first three.'],
-      ['  xyz\n', '  x'],
-      ['four\n', 'fou'],
-      ['!\n', '!']
-    ],
-    ['Read the entire line, including spaces.', 'String indexing starts at zero.', 'A slice can select characters from the beginning of a string.', 'Use a slice ending at index 3.', 'Python safely returns the whole string when it is shorter than the slice.'],
-    'text = input()\nprint(text[:3])\n',
-    'The slice text[:3] returns characters at indexes 0, 1, and 2 when present.',
-    'text = input()\n\n# Print at most the first three characters.\n'
-  ),
+  'level-09-problem-5': {
+    ...challenge(
+      'Mask All But the Last Four Characters',
+      'Read a line of ASCII text and replace every character except its last four with an asterisk. Leave lines of four or fewer characters unchanged.',
+      'One line of ASCII text, which may be empty and may contain spaces.',
+      'Print the masked line, preserving the final four characters exactly.',
+      ['The line contains at most 100 ASCII characters.', 'Spaces count as characters.'],
+      [
+        ['abcdef\n', '**cdef', 'The first two characters are masked and the last four remain.'],
+        ['Hi\n', 'Hi', 'The line has fewer than four characters, so nothing is masked.'],
+        ['\n', ''],
+        ['abcd\n', 'abcd'],
+        ['12345\n', '*2345'],
+        ['A B C\n', '* B C'],
+        ['  xyz\n', '* xyz'],
+        ['!1234567\n', '****4567']
+      ],
+      ['Read the entire line, including spaces.', 'Count how many characters occur before the final four.', 'The mask length cannot be negative.', 'Repeat an asterisk for each masked character.', 'Add the final four-character slice after the mask.'],
+      'text = input()\nmask_length = max(0, len(text) - 4)\nprint("*" * mask_length + text[-4:])\n',
+      'Replace the prefix with the same number of asterisks and append the unchanged final four characters.',
+      'text = input()\n\n# Mask the characters before the last four.\n'
+    ),
+    contentRevision: 2
+  },
   'level-10-problem-1': challenge(
     'Format Two Initials',
     'Read two ASCII names and print their first letters in uppercase, each followed by a dot.',
