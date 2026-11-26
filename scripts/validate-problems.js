@@ -1,21 +1,115 @@
+import fs from 'node:fs';
+import { loadPyodide } from 'pyodide';
 import { levels, problems } from '../src/data/curriculum.js';
 
-const ids = new Set();
 const failures = [];
+const ids = new Set();
+let publicCases = 0;
+let hiddenCases = 0;
+let referenceRuns = 0;
+let passedRuns = 0;
+
 if (levels.length !== 100) failures.push(`Expected 100 levels, found ${levels.length}`);
-if (problems.length < 500) failures.push(`Expected at least 500 problems, found ${problems.length}`);
+if (problems.length < 500) failures.push(`Expected at least 500 challenges, found ${problems.length}`);
+if (levels.some((level, index) => level.number !== index + 1)) failures.push('Level numbering must be complete from 1 through 100.');
+if (new Set(levels.map(level => level.id)).size !== levels.length) failures.push('Level identifiers must be unique.');
+
+const pyodide = await loadPyodide();
+function normalize(output) {
+  return String(output).replace(/\r\n/g, '\n').replace(/\n+$/, '').replace(/[ \t]+\n/g, '\n');
+}
+
+async function execute(code, input) {
+  const script = `import io, sys
+_pylevel_out = io.StringIO()
+_pylevel_err = io.StringIO()
+sys.stdout = _pylevel_out
+sys.stderr = _pylevel_err
+sys.stdin = io.StringIO(${JSON.stringify(input)})
+exec(compile(${JSON.stringify(code)}, '<reference-solution>', 'exec'), {'__name__': '__main__'})
+(_pylevel_out.getvalue(), _pylevel_err.getvalue())`;
+  const result = await pyodide.runPythonAsync(script);
+  const values = result.toJs();
+  result.destroy();
+  return { stdout: values[0], stderr: values[1] };
+}
+
+async function validateSyntax(code, source) {
+  const result = await pyodide.runPythonAsync(`compile(${JSON.stringify(code)}, ${JSON.stringify(source)}, 'exec')`);
+  result.destroy();
+}
+
 for (const level of levels) {
-  if (level.problems.length < 5) failures.push(`Level ${level.number} has fewer than five problems`);
+  if (!level.id || !level.title || !level.description || !level.learningObjectives?.length || !level.difficulty) {
+    failures.push(`Level ${level.number} is missing required metadata.`);
+  }
+  if (!Array.isArray(level.problems) || level.problems.length < 5) {
+    failures.push(`Level ${level.number} has fewer than five challenges.`);
+    continue;
+  }
   for (const problem of level.problems) {
-    if (ids.has(problem.id)) failures.push(`Duplicate id: ${problem.id}`);
+    if (ids.has(problem.id)) failures.push(`Duplicate challenge id: ${problem.id}`);
     ids.add(problem.id);
-    if (!problem.referenceSolution) failures.push(`Missing reference solution: ${problem.id}`);
-    if (problem.publicTestCases.length < 3) failures.push(`Expected at least 3 public tests: ${problem.id}`);
-    if (problem.hiddenTestCases.length < 5) failures.push(`Expected at least 5 hidden tests: ${problem.id}`);
+    if (problem.level !== level.number) failures.push(`${problem.id} is assigned to the wrong level.`);
+    if (!problem.title || !problem.description || !problem.examples?.length || !problem.referenceSolution) {
+      failures.push(`${problem.id} is missing required problem content.`);
+    }
+    if (!problem.starterCode?.stdin || !problem.supportedFormats?.includes('stdin')) {
+      failures.push(`${problem.id} is missing its stdin starter code/format.`);
+    }
+    if (problem.hints?.length !== 5) failures.push(`${problem.id} must contain five progressive hints.`);
+    if (!problem.explanation) failures.push(`${problem.id} is missing its solution explanation.`);
+    const publicTests = Array.isArray(problem.publicTestCases) ? problem.publicTestCases : [];
+    const hiddenTests = Array.isArray(problem.hiddenTestCases) ? problem.hiddenTestCases : [];
+    if (publicTests.length < 3) failures.push(`${problem.id} has fewer than three public tests.`);
+    if (hiddenTests.length < 5) failures.push(`${problem.id} has fewer than five hidden tests.`);
+
+    try {
+      await validateSyntax(problem.starterCode.stdin, '<starter-code>');
+    } catch (error) {
+      failures.push(`${problem.id} starter code syntax: ${error.message}`);
+    }
+
+    for (const [visibility, cases] of [
+      ['public', publicTests],
+      ['hidden', hiddenTests]
+    ]) {
+      if (visibility === 'public') publicCases += cases.length;
+      else hiddenCases += cases.length;
+      for (let index = 0; index < cases.length; index += 1) {
+        referenceRuns += 1;
+        const testCase = cases[index];
+        try {
+          const result = await execute(problem.referenceSolution, testCase.input);
+          if (normalize(result.stdout) !== normalize(testCase.output)) {
+            failures.push(`${problem.id} ${visibility} test ${index + 1}: expected ${JSON.stringify(testCase.output)}, received ${JSON.stringify(result.stdout)}.`);
+          } else {
+            passedRuns += 1;
+          }
+        } catch (error) {
+          failures.push(`${problem.id} ${visibility} test ${index + 1} raised ${error.message}`);
+        }
+      }
+    }
   }
 }
-if (failures.length) {
-  console.error(failures.join('\n'));
-  process.exit(1);
-}
-console.log(`Validated ${levels.length} levels and ${problems.length} challenge instances.`);
+
+const report = `# Curriculum Validation Report
+
+Generated by \`npm run validate:problems\` using the installed Pyodide Python runtime.
+
+- Total levels: ${levels.length}
+- Total core challenges: ${problems.length}
+- Public test cases: ${publicCases}
+- Hidden test cases: ${hiddenCases}
+- Reference-solution executions: ${referenceRuns}
+- Passed reference executions: ${passedRuns}
+- Failed validations: ${failures.length}
+- Problems repaired during this validation: 0
+- Remaining curriculum-content concern: challenge titles/descriptions and reference solutions are largely factory-generated; execution passing does not prove that each is a distinct, topic-accurate learning objective.
+
+${failures.length ? `## Failures\n\n${failures.map(failure => `- ${failure}`).join('\n')}` : 'All structural checks and executed reference test cases passed.'}
+`;
+fs.writeFileSync('CURRICULUM_VALIDATION_REPORT.md', report);
+console.log(report);
+if (failures.length) process.exitCode = 1;

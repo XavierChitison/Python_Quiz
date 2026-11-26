@@ -34,7 +34,6 @@ function makeProblem(level, index) {
   const id = `level-${String(level).padStart(2,'0')}-problem-${index}`;
   const seed = level * 100 + index;
   const n = 5 + ((seed * 7) % 20);
-  const formats = level < 61 ? ['stdin'] : (level % 3 === 0 ? ['stdin', 'function'] : ['stdin']);
   const stdinNumbers = [n, n + 3, n + 11];
   const publicTestCases = level <= 10
     ? stdinNumbers.map(value => {
@@ -59,7 +58,7 @@ function makeProblem(level, index) {
   if (level === 8) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value ** 2)\n';
   if (level === 9) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value % 4)\n';
   if (level === 10) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value + value * 2)\n';
-  return {
+  const problem = {
     id, title: `${topic} — Practice ${index}`, level, difficulty, topic,
     tags: [topic.toLowerCase().replaceAll(' ', '-')],
     learningObjectives: [`Practice ${topic.toLowerCase()} with a complete input/output solution.`],
@@ -69,7 +68,7 @@ function makeProblem(level, index) {
     outputFormat: 'Print exactly one result per input case.',
     constraints: ['Follow the output format exactly.', 'Do not print prompts or labels.'],
     examples: [{ input: publicTestCases[0].input.trim(), output: publicTestCases[0].output }],
-    supportedFormats: formats,
+    supportedFormats: ['stdin'],
     starterCode: { stdin: starter(level % 3 === 0 ? 'stdin' : 'stdin'), function: starter('function') },
     publicTestCases,
     hiddenTestCases: [n - 1, 0, 1, 12, 100].map(value => {
@@ -98,18 +97,45 @@ function makeProblem(level, index) {
     xpReward: level <= 10 ? 10 : level <= 30 ? 15 : level <= 50 ? 25 : level <= 70 ? 40 : 60,
     estimatedMinutes: level <= 30 ? 5 : level <= 70 ? 10 : 15
   };
+  if (level === 1 && index === 1) {
+    const cases = Array.from({ length: 3 }, () => ({ input: '', output: 'Hello, World!' }));
+    const hidden = Array.from({ length: 5 }, () => ({ input: '', output: 'Hello, World!' }));
+    Object.assign(problem, {
+      title: 'Print Hello, World!',
+      description: 'Print exactly the text `Hello, World!` followed by a newline. This first problem requires no input.',
+      inputFormat: 'There is no input.',
+      outputFormat: 'Print `Hello, World!` followed by a newline.',
+      examples: [{ input: '', output: 'Hello, World!' }],
+      starterCode: { ...problem.starterCode, stdin: '# Write your code here\n' },
+      publicTestCases: cases,
+      hiddenTestCases: hidden,
+      hints: [
+        'You do not need to read any input.',
+        'Python can display text with the print() function.',
+        'In pseudocode: display the greeting.',
+        'Call print() with the greeting inside quotation marks.',
+        'Check the exact capitalization and punctuation before submitting.'
+      ],
+      referenceSolution: 'print("Hello, World!")\n',
+      explanation: 'Call print() with the exact greeting. Python adds the required newline automatically.'
+    });
+  }
+  return problem;
 }
 
 export const levels = Array.from({ length: 100 }, (_, i) => {
   const level = i + 1;
   const stageIndex = Math.floor(i / 10);
   return {
+    id: `level-${String(level).padStart(2,'0')}`,
     number: level,
     title: levelTopics[i],
     stage: stageIndex + 1,
     stageTitle: stageNames[stageIndex][0],
     topic: levelTopics[i],
     description: stageNames[stageIndex][1],
+    learningObjectives: [`Apply ${levelTopics[i].toLowerCase()} in a standard input/output Python program.`],
+    difficulty: level <= 10 ? 'Absolute beginner' : level <= 20 ? 'Beginner' : level <= 60 ? 'Beginner to intermediate' : level <= 80 ? 'Intermediate' : 'Advanced',
     requiredSolved: 4,
     xpAvailable: 25 + level * 2,
     problems: Array.from({ length: 5 }, (_, j) => makeProblem(level, j + 1))

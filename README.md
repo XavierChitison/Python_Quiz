@@ -1,43 +1,48 @@
 # Xavier's Python Challenge
 
-Xavier's Python Challenge is a completely free, local-first browser platform for Python learning and technical interview preparation.
+Xavier's Python Challenge is a free, local-first Python coding game. It is a static website built with HTML, CSS, and browser-native JavaScript modules; the root `index.html` is the app entry point.
 
 ## Features
-- 100-level curriculum with 500 initial challenge instances
-- Monaco Python editor
-- Real Python execution with Pyodide in a Web Worker
-- stdin/stdout and custom-input judging
-- Problem library and learning roadmap
-- Dashboard, XP, achievements, settings, playground, and local persistence
-- Generated challenge entry point and backup export
+- Start directly in the first coding problem
+- 100 levels and 500 challenge records, with sequential progression
+- Ace-based Python editor with local syntax highlighting, keyboard editing, and configurable themes
+- Custom stdin, public/hidden test evaluation, and progressive hints
+- Pyodide Python runtime in a browser Web Worker
+- Daily challenge, timed interview practice, settings, and local progress
+- Saved drafts, JSON backup/restore, and Python-file export
+- Responsive layout, reduced-motion support, and opt-in procedural background music and sound effects
 
-## Development
-```powers
-npm install
-npm run dev
-```
+## Run the app
 
-Open `http://127.0.0.1:5173`.
+1. Open the project folder in VS Code.
+2. Open the root `index.html`.
+3. Start the page with the **Live Server** extension.
 
-## Commands
-```powers
-npm run build
-npm run preview
-npm run test
+Serve the page over HTTP; browser-native modules do not work reliably from `file://`. Visitors do not need npm, Node.js, a build step, an account, or a backend. Ace is vendored under `public/vendor/ace/`, so the editor also works on static hosting.
+
+## Contributor checks
+
+Install test-only dependencies with `npm ci`, then run:
+
+```powershell
+npm test
 npm run test:e2e
-npm run validate:problems
 npm run test:accessibility
+npm run validate:problems
 ```
 
-## Python execution
-The first run downloads Pyodide from the jsDelivr CDN. Python executes inside a Web Worker with an in-memory stdin. Execution limits terminate or cancel long-running work. Browser execution is not a hardened security sandbox.
+`npm run serve:test` starts the small static test server used by Playwright. It can also serve the app under `/repo/` to verify repository subpaths. There is intentionally no Vite build or development-server requirement.
 
-## Data
-Learner progress is persisted in browser storage and local IndexedDB-backed/local profile data. Export progress from Settings for backup. Import and full restoration are documented as future work.
+## Python execution and privacy
 
-## Static hosting
-Run `npm run build` and publish the `dist` directory. Relative Vite assets are configured for static subdirectory hosting.
+The first Python run downloads the pinned Pyodide runtime from jsDelivr and needs an internet connection. Code executes locally in a browser Web Worker. This is not a hardened security sandbox; hidden test data is inspectable. Progress and drafts stay in the current browser profile unless exported, and do not sync across devices.
 
-Recommended: Cloudflare Pages or Netlify's free tier. Neither requires a backend for this application. Do not commit a custom domain or payment configuration.
+## Publishing
 
-Each browser profile maintains independent progress. Export JSON from Settings to transfer progress to another browser or device.
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md). GitHub Pages can publish from the repository root without bundling. No public deployment has been run as part of this work.
+
+See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for editor and Python-runtime notices.
+
+## Known limitation
+
+The 500 challenge records pass structural and reference-execution checks, but much of the curriculum is still generated and repetitive rather than authored to distinct, topic-specific learning objectives. See [APPLICATION_AUDIT.md](./APPLICATION_AUDIT.md), [FEATURE_VERIFICATION.md](./FEATURE_VERIFICATION.md), [CURRICULUM_VALIDATION_REPORT.md](./CURRICULUM_VALIDATION_REPORT.md), and [TEST_REPORT.md](./TEST_REPORT.md) for implementation status and measured verification.

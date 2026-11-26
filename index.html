@@ -1,22 +1,27 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b1019" />
-    <meta name="description" content="Practice Python for free with 100 progressive learning levels, hundreds of coding challenges, real Python execution, interactive lessons, and technical interview preparation." />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Xavier's Python Challenge | Free Python Coding Practice" />
-    <meta property="og:description" content="A completely free Python learning platform for beginners and aspiring software engineers." />
-    <meta property="og:image" content="/xpc-logo.svg" />
-    <meta name="application-name" content="Xavier's Python Challenge" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <title>Xavier's Python Challenge | Free Python Coding Practice</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090d17">
+    <meta name="description" content="Code. Solve. Level up. Free Python coding practice that runs in your browser.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Xavier's Python Challenge">
+    <meta property="og:description" content="A free, local-first Python coding game.">
+    <meta property="og:image" content="./public/xpc-logo.svg">
+    <meta name="application-name" content="Xavier's Python Challenge">
+    <link rel="icon" href="./public/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="./public/manifest.webmanifest">
+    <link rel="stylesheet" href="./src/styles/game.css">
+    <title>Xavier's Python Challenge — Code. Solve. Level Up.</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <a class="skip-link" href="#main-content">Skip to coding workspace</a>
+    <div id="app" aria-live="off"></div>
+    <script src="./public/vendor/ace/ace.js"></script>
+    <script src="./public/vendor/ace/mode-python.js"></script>
+    <script src="./public/vendor/ace/theme-tomorrow_night.js"></script>
+    <script src="./public/vendor/ace/theme-chrome.js"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

@@ -1,27 +1,20 @@
 {
-  "name": "xaviers-python-challenge",
+  "name": "xaviers-python-challenge-tests",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1",
+    "serve:test": "node scripts/static-server.js",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:accessibility": "playwright test tests/e2e/app.spec.js --grep \"accessibility\"",
+    "test:accessibility": "playwright test tests/e2e/app.spec.js --grep accessibility",
     "validate:problems": "node scripts/validate-problems.js"
-  },
-  "dependencies": {
-    "chart.js": "^4.4.7",
-    "lucide": "^0.468.0",
-    "monaco-editor": "^0.52.2",
-    "pyodide": "^0.27.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.49.1",
-    "vite": "^6.0.7",
+    "ace-builds": "^1.43.3",
+    "pyodide": "0.27.2",
     "vitest": "^2.1.8"
   }
 }

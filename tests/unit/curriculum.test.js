@@ -21,4 +21,12 @@ describe("Xavier's Python Challenge curriculum", () => {
       Boolean(problem.referenceSolution)
     )).toBe(true);
   });
+  it('starts with an input-free Hello, World! challenge', () => {
+    const first = levels[0].problems[0];
+    expect(first.title).toBe('Print Hello, World!');
+    expect(first.publicTestCases.every(testCase =>
+      testCase.input === '' && testCase.output === 'Hello, World!'
+    )).toBe(true);
+    expect(first.referenceSolution).toContain('print("Hello, World!")');
+  });
 });

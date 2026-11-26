@@ -1,39 +1,32 @@
-# Development Progress
+# Development progress
 
 ## Current status
-Xavier's Python Challenge is implemented as a completely free, static-ready Vite application with the existing 100-level curriculum and browser-based Python execution.
+
+The application has been migrated to a static HTML/CSS/vanilla-JavaScript runtime. Opening the root `index.html` through VS Code Live Server is the normal way to use it; npm is only needed for contributor tests.
 
 ## Implemented
-- Dark/light responsive application shell
-- 100 levels with 5 challenge instances each
-- Problem library and navigation
-- Real Python Web Worker integration
-- Public and hidden test evaluation
-- XP and solved-problem persistence
-- Progress backup and reset controls
-- First-run onboarding with experience and goal preferences
-- Mistake notebook populated by failed submissions
-- Interview assessment configuration and persisted assessment record
-- Per-test Python worker isolation and UI-level timeout cancellation
-- Rebranded XPC logo, favicon, metadata, manifest, footer, and About/Privacy pages
-- Optional onboarding with Skip and Start Practicing
-- Free guest access without accounts or monetization
-- Website and challenge sharing controls
-- JSON progress import and export
-- Legacy local-progress migration
 
-## Remaining
-- Expand every challenge with distinct authored descriptions and topic-specific reference solutions
-- Complete timed interview countdown, question navigation, and final report UI
-- Add deeper spaced-review scheduling and adaptive recommendations
-- Expand end-to-end coverage beyond dashboard and guest-access smoke tests
+- Direct first-load into Level 1, Problem 1.
+- Five-item navigation: Problems, All Levels, Daily Challenge, Interview Practice, and Settings.
+- Local-first progress, settings, and saved code with legacy-key migration.
+- Worker-based Pyodide execution with timeouts, cancellation, output limits, and worker recreation.
+- Sequential levels, deterministic daily selection, timed interview configuration/results, settings, and versioned backup helpers.
+- Responsive static layout, line numbers, indentation, keyboard shortcuts, reduced motion, sound controls, and celebrations.
+- Relative module and asset URLs; local static-server tests include `/repo/` hosting.
+- Removed old Vite, Monaco, standalone tools, and unused style modules.
 
-## Verification
-- Production build: passed
-- Unit tests: 4 passed
-- Curriculum validation: 100 levels, 500 challenge instances
-- Playwright navigation smoke test: passed
-- Axe serious/critical violation dashboard smoke test: passed
-- Final unit tests: 5 passed
-- Final Playwright tests: 3 passed
-- Final accessibility test: 1 passed
+## Remaining work
+
+- Author and validate topic-accurate, distinct problems; current generated curriculum content remains repetitive.
+- Add syntax highlighting without compromising editor accessibility or fallback behavior.
+- Expand browser tests for Python exceptions, multi-line/custom stdin, output limits, cancellation, timeout recovery, interview expiration/reload, and backup UI workflows.
+- Manually verify keyboard/screen-reader behavior and responsive layouts across browsers.
+- GitHub Pages publication has not been authorized or performed.
+
+## Verified
+
+- `npm ci` passed.
+- `npm test`: 12 tests passed.
+- `npm run validate:problems`: 4,000/4,000 reference-solution executions passed across 100 levels and 500 records.
+- `npm run test:accessibility` passed with no serious or critical Axe violations on the default workspace.
+- Root and `/repo/` routes, navigation, daily flow, interview question navigation, settings persistence, draft persistence, mobile layout, and one real Python submission are covered by Playwright. A final full E2E rerun remains.
