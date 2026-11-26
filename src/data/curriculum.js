@@ -13,6 +13,8 @@ import { collections5155Challenges } from './collections-51-55.js';
 import { collections5660Challenges } from './collections-56-60.js';
 import { functions6165Challenges } from './functions-61-65.js';
 import { matrices6670Challenges } from './matrices-66-70.js';
+import { search7175Challenges } from './search-71-75.js';
+import { algorithms7680Challenges } from './algorithms-76-80.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -35,7 +37,7 @@ export const levelTopics = [
   'List fundamentals','List transformations','List indexing and rearrangement','List search and comparisons','Sorted lists and merging','Prefixes and windows','List grouping and grids','List updates and circular sequences','List search and subarrays','List algorithm applications',
   'Dictionary fundamentals','Frequencies and lookups','Set applications','Grouping and keyed records','Dictionary operations','Multisets and indexing','Frequency algorithms','Sparse data','Graph mappings','Dictionary applications',
   'Defining functions','Callable parameters','Function applications','Matrix fundamentals','Square matrices','Matrix properties','Grid rules','Matrix algorithms','Numerical functions','Linear algebra',
-  'Two-pointer basics','Two-sum','Sorted arrays','Sliding windows','Fixed windows','Variable windows','Prefix sums','Binary search','Intervals','Interview review',
+  'Binary search on answers','Sorting and inversions','Search in structured data','Divide-and-conquer and heaps','Selection and stream statistics','Two-pointer algorithms','Number theory algorithms','Greedy interval algorithms','Advanced window algorithms','Parametric search and graphs',
   'Stacks','Stack problems','Queues','Linked list basics','Linked list traversal','Linked list manipulation','Recursion basics','Recursive problems','Binary trees','Tree traversal',
   'Graphs','Breadth-first search','Depth-first search','Backtracking','Combinations','Greedy algorithms','Dynamic programming','One-dimensional DP','Advanced DP','Final assessment'
 ];
@@ -119,7 +121,8 @@ function makeProblem(level, index) {
     strings3135Challenges[id] || strings3640Challenges[id] ||
     lists4145Challenges[id] || lists4650Challenges[id] ||
     collections5155Challenges[id] || collections5660Challenges[id] ||
-    functions6165Challenges[id] || matrices6670Challenges[id];
+    functions6165Challenges[id] || matrices6670Challenges[id] ||
+    search7175Challenges[id] || algorithms7680Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }
