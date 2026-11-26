@@ -30,7 +30,7 @@ test('new visitors land directly in the Level 1 coding workspace', async ({ page
   await page.goto('/');
   await expect(page).toHaveTitle(/Xavier's Python Challenge/);
   await expect(page.getByRole('heading', { name: 'Level 1: Printing values' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(5);
   await expect(page.getByRole('button', { name: 'Run Code' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Submit Solution' })).toBeVisible();
@@ -59,9 +59,9 @@ test('skip link focuses the current page without changing its route or history',
 
 test('direct, invalid, and history routes remain usable under the repository prefix', async ({ page }) => {
   await page.goto('/repo/#/problems/level-01-problem-1');
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await page.getByRole('link', { name: 'All Levels', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
   await page.getByRole('link', { name: 'Settings' }).click();
@@ -73,7 +73,7 @@ test('direct, invalid, and history routes remain usable under the repository pre
   for (const hash of ['#/not-a-route', '#/problems/no-such-problem', '#/problems/%E0%A4%A', '#main-content']) {
     await page.goto(`/repo/${hash}`);
     await expect(page).toHaveURL(/#\/problems\/level-01-problem-1$/);
-    await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   }
 });
 
@@ -82,6 +82,7 @@ test('returning visitors resume the next problem and a legacy saved draft', asyn
     localStorage.setItem('pylevel-progress', JSON.stringify({
       profile: { level: 1 },
       solved: ['level-01-problem-1'],
+      solvedRevisions: { 'level-01-problem-1': 1 },
       lastProblemId: 'level-01-problem-1'
     }));
     localStorage.setItem('pylevel-draft-level-01-problem-2', 'print("legacy draft")');
@@ -91,11 +92,34 @@ test('returning visitors resume the next problem and a legacy saved draft', asyn
   expect(await getEditorValue(page)).toBe('print("legacy draft")');
 });
 
+test('the rewritten first problem archives old progress but keeps its saved code', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('xpc-progress', JSON.stringify({
+      solved: ['level-01-problem-1'],
+      profile: { level: 1, xp: 10 }
+    }));
+    localStorage.setItem('xpc-draft-level-01-problem-1', 'print("Hello, World!")');
+  });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
+  expect(await getEditorValue(page)).toBe('print("Hello, World!")');
+  const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')));
+  expect(progress.historicalSolved).toContain('level-01-problem-1');
+  expect(progress.solved).not.toContain('level-01-problem-1');
+  expect(progress.profile.xp).toBe(10);
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Wrong Answer', { timeout: 90000 });
+  await setEditorValue(page, 'first, second = map(int, input().split())\nprint(second, first)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Accepted', { timeout: 90000 });
+});
+
 test('replaced problems retain old drafts but require a new accepted submission', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('xpc-progress', JSON.stringify({
       profile: { level: 1, xp: 20 },
       solved: ['level-01-problem-1', 'level-01-problem-2'],
+      solvedRevisions: { 'level-01-problem-1': 1 },
       completedLevels: [1]
     }));
     localStorage.setItem('xpc-draft-level-01-problem-2', 'print("old draft")');
@@ -195,6 +219,20 @@ test('a revised digit challenge checks leading zeros when reversing', async ({ p
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-06-problem-4'])).toBe(1);
 });
 
+test('a revised multiline challenge preserves spaces in browser Python output', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('xpc-progress', JSON.stringify({ settings: { unrestrictedPractice: true } }));
+  });
+  await page.goto('/#/problems/level-08-problem-4');
+  await expect(page.getByRole('heading', { name: 'Join Two Lines with a Space' })).toBeVisible();
+  await setEditorValue(page, 'print(input().strip() + " " + input().strip())');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Wrong Answer', { timeout: 90000 });
+  await setEditorValue(page, 'first = input()\nsecond = input()\nprint(first + " " + second)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Accepted', { timeout: 90000 });
+});
+
 test('All Levels exposes the curriculum and preserves level selection', async ({ page }) => {
   await page.goto('/#/levels');
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
@@ -262,7 +300,7 @@ test('Python export downloads the current unsaved editor contents from Settings'
   await page.goto('/#/settings');
   await page.getByRole('checkbox', { name: 'Automatic draft saving' }).uncheck();
   await page.getByRole('link', { name: 'Problems', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   const code = 'print("export exactly this code")';
   await setEditorValue(page, code);
   await expect.poll(() => getEditorValue(page)).toBe(code);
@@ -316,7 +354,7 @@ test('a previously cached unversioned app does not break the current release', a
     }
   });
   await page.goto('/repo/');
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await setEditorValue(page, 'print("fresh worker")');
   await page.getByRole('button', { name: 'Run Code' }).click();
   await expect(page.locator('.console-output')).toContainText('fresh worker', { timeout: 90_000 });
@@ -415,7 +453,7 @@ test('background music is opt-in and its controls and settings persist', async (
   await page.getByRole('button', { name: 'Play background music' }).click();
   await expect(page.locator('#music-control-status')).toHaveText('Music on');
   await page.getByRole('link', { name: 'Problems', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await expect(page.locator('#music-track-name')).toHaveText('Digital Exploration');
   await page.reload();
   await page.goto('/#/settings');
@@ -426,7 +464,7 @@ test('background music is opt-in and its controls and settings persist', async (
 test('real Python execution remains available in the shared workspace', async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto('/');
-  await setEditorValue(page, 'print("Hello, World!")');
+  await setEditorValue(page, 'a, b = map(int, input().split())\nprint(b, a)');
   await page.getByRole('button', { name: 'Submit Solution' }).click();
   await expect(page.locator('#execution-state')).toHaveText('Accepted', { timeout: 90_000 });
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')));
@@ -437,13 +475,13 @@ test('solving the five problems advances to Level 2 and celebrates completion', 
   test.setTimeout(120_000);
   await page.goto('/');
   const solutions = [
-    'print("Hello, World!")',
+    'a, b = map(int, input().split())\nprint(b, a)',
     'print(input())',
     'print(int(input()) * 2)',
     'n = int(input())\nprint(n * n)',
     'a, b = map(int, input().split())\nprint(a + b)'
   ];
-  const titles = ['Print Hello, World!', 'Echo a Line', 'Double an Integer', 'Square an Integer', 'Add Two Integers'];
+  const titles = ['Swap Two Values', 'Echo a Line', 'Double an Integer', 'Square an Integer', 'Add Two Integers'];
   for (let index = 1; index <= 5; index += 1) {
     await setEditorValue(page, solutions[index - 1]);
     expect(await getEditorValue(page)).toBe(solutions[index - 1]);
@@ -560,7 +598,7 @@ test('slow Python runtime initialization does not consume the code execution lim
 test('workspace remains usable at a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   const widths = await page.evaluate(() => ({
     document: document.documentElement.scrollWidth,
     viewport: document.documentElement.clientWidth

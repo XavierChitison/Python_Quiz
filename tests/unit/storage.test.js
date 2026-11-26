@@ -71,11 +71,13 @@ describe('browser progress storage', () => {
 
   it('archives old completions without losing drafts, unlocks, assessment code, or daily rewards', () => {
     const changed = 'level-01-problem-2';
-    const unchanged = 'level-01-problem-1';
+    const changedFirst = 'level-01-problem-1';
+    const unchanged = 'level-01-problem-3';
     const date = '2025-04-10';
     localStorage.setItem('xpc-progress', JSON.stringify({
       profile: { level: 5, xp: 100 },
-      solved: [unchanged, changed],
+      solved: [unchanged, changed, changedFirst],
+      solvedRevisions: { [unchanged]: 1 },
       completedLevels: [1],
       daily: { date, problemId: changed, completedDates: [date], rewardedDates: [date] },
       activeAssessment: {
@@ -84,14 +86,16 @@ describe('browser progress storage', () => {
       }
     }));
     saveDraft(changed, 'old saved code');
+    saveDraft(changedFirst, 'print("Hello, World!")');
     const migrated = progressSnapshot();
 
     expect(migrated.solved).toEqual([unchanged]);
-    expect(migrated.historicalSolved).toEqual([changed]);
+    expect(migrated.historicalSolved).toEqual([changed, changedFirst]);
     expect(migrated.completedLevels).toEqual([]);
     expect(migrated.historicalCompletedLevels).toEqual([1]);
     expect(migrated.profile).toMatchObject({ level: 5, xp: 100 });
     expect(getDraft(changed)).toBe('old saved code');
+    expect(getDraft(changedFirst)).toBe('print("Hello, World!")');
     expect(migrated.daily).toMatchObject({ completedDates: [], historicalCompletedDates: [date], rewardedDates: [date] });
     expect(migrated.activeAssessment.answers).toEqual({});
     expect(migrated.activeAssessment.historicalAnswers).toEqual({ [changed]: true });

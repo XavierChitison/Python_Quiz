@@ -1,4 +1,6 @@
 import { beginnerChallenges } from './beginner.js';
+import { beginner0708Challenges } from './beginner-07-08.js';
+import { beginner0910Challenges } from './beginner-09-10.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -14,7 +16,7 @@ export const stageNames = [
 ];
 
 export const levelTopics = [
-  'Printing values','Reading integer input','Geometry calculations','Unit conversions','Everyday calculations','Working with digits','Division','Exponents','Modulo','Arithmetic review',
+  'Printing values','Reading integer input','Geometry calculations','Unit conversions','Everyday calculations','Working with digits','Mathematical expressions','Basic string operations','String transformations','Combining fundamentals',
   'Equality comparisons','Greater-than comparisons','Less-than comparisons','Even and odd','Positive and negative','Larger of two','Smaller of two','Multiple conditions','Boolean operators','Conditions review',
   'For loops','range()','Counting iterations','Summing numbers','Counting evens','Counting odds','Multiplication tables','While loops','Break and continue','Loops review',
   'String length','Character indexing','String slicing','Uppercase and lowercase','Counting characters','Counting vowels','Counting consonants','Reversing strings','Palindromes','String review',
@@ -99,30 +101,8 @@ function makeProblem(level, index) {
     xpReward: level <= 10 ? 10 : level <= 30 ? 15 : level <= 50 ? 25 : level <= 70 ? 40 : 60,
     estimatedMinutes: level <= 30 ? 5 : level <= 70 ? 10 : 15
   };
-  if (level === 1 && index === 1) {
-    const cases = Array.from({ length: 3 }, () => ({ input: '', output: 'Hello, World!' }));
-    const hidden = Array.from({ length: 5 }, () => ({ input: '', output: 'Hello, World!' }));
-    Object.assign(problem, {
-      title: 'Print Hello, World!',
-      description: 'Print exactly the text `Hello, World!` followed by a newline. This first problem requires no input.',
-      inputFormat: 'There is no input.',
-      outputFormat: 'Print `Hello, World!` followed by a newline.',
-      examples: [{ input: '', output: 'Hello, World!' }],
-      starterCode: { ...problem.starterCode, stdin: '# Write your code here\n' },
-      publicTestCases: cases,
-      hiddenTestCases: hidden,
-      hints: [
-        'You do not need to read any input.',
-        'Python can display text with the print() function.',
-        'In pseudocode: display the greeting.',
-        'Call print() with the greeting inside quotation marks.',
-        'Check the exact capitalization and punctuation before submitting.'
-      ],
-      referenceSolution: 'print("Hello, World!")\n',
-      explanation: 'Call print() with the exact greeting. Python adds the required newline automatically.'
-    });
-  }
-  if (beginnerChallenges[id]) Object.assign(problem, beginnerChallenges[id]);
+  const replacement = beginnerChallenges[id] || beginner0708Challenges[id] || beginner0910Challenges[id];
+  if (replacement) Object.assign(problem, replacement);
   return problem;
 }
 

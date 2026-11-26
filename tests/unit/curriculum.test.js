@@ -5,11 +5,11 @@ describe("Xavier's Python Challenge curriculum", () => {
   it('contains exactly 100 levels', () => {
     expect(levels).toHaveLength(100);
   });
-  it('contains at least 500 challenge instances', () => {
-    expect(problems.length).toBeGreaterThanOrEqual(500);
+  it('contains exactly 500 challenge instances', () => {
+    expect(problems).toHaveLength(500);
   });
   it('has five challenges in every level', () => {
-    expect(levels.every(level => level.problems.length >= 5)).toBe(true);
+    expect(levels.every(level => level.problems.length === 5)).toBe(true);
   });
   it('uses unique problem identifiers', () => {
     expect(new Set(problems.map(problem => problem.id)).size).toBe(problems.length);
@@ -21,17 +21,14 @@ describe("Xavier's Python Challenge curriculum", () => {
       Boolean(problem.referenceSolution)
     )).toBe(true);
   });
-  it('starts with an input-free Hello, World! challenge', () => {
+  it('starts with a two-value input and output challenge', () => {
     const first = levels[0].problems[0];
-    expect(first.title).toBe('Print Hello, World!');
-    expect(first.publicTestCases.every(testCase =>
-      testCase.input === '' && testCase.output === 'Hello, World!'
-    )).toBe(true);
-    expect(first.referenceSolution).toContain('print("Hello, World!")');
+    expect(first.title).toBe('Swap Two Values');
+    expect(first.publicTestCases[0]).toEqual({ input: '3 7\n', output: '7 3' });
   });
   it('gives revised beginner challenges distinct solutions and meaningful examples', () => {
     const revised = problems.filter(problem => problem.contentRevision === 1);
-    expect(revised).toHaveLength(29);
+    expect(revised).toHaveLength(50);
     expect(new Set(revised.map(problem => problem.referenceSolution)).size).toBe(revised.length);
     for (const problem of revised) {
       expect(problem.examples).toHaveLength(2);
@@ -44,6 +41,7 @@ describe("Xavier's Python Challenge curriculum", () => {
 
   it('checks revised expected outputs using independent JavaScript calculations', () => {
     const calculate = {
+      'level-01-problem-1': input => input.trim().split(/\s+/).map(Number).reverse().join(' '),
       'level-01-problem-2': input => input.replace(/\n$/, ''),
       'level-01-problem-3': input => String(Number(input) * 2),
       'level-01-problem-4': input => String(Number(input) ** 2),
@@ -81,7 +79,8 @@ describe("Xavier's Python Challenge curriculum", () => {
       'level-06-problem-4': input => String(Number([...input.trim()].reverse().join(''))),
       'level-06-problem-5': input => input.trim().padStart(2, '0').slice(-2, -1)
     };
-    for (const problem of problems.filter(item => item.contentRevision === 1)) {
+    expect(Object.keys(calculate)).toHaveLength(30);
+    for (const problem of problems.filter(item => Object.hasOwn(calculate, item.id))) {
       for (const testCase of [...problem.publicTestCases, ...problem.hiddenTestCases]) {
         expect(calculate[problem.id](testCase.input), `${problem.id}: ${testCase.input}`).toBe(testCase.output);
       }

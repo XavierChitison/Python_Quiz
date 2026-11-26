@@ -2,7 +2,7 @@ const starter = 'import sys\n\n# Read the input and write your solution here.\n'
 const singleIntegerStarter = 'number = int(input())\n\n# Calculate and print the result.\n';
 const multipleIntegersStarter = 'numbers = list(map(int, input().split()))\n\n# Calculate and print the result.\n';
 
-function challenge(title, description, inputFormat, outputFormat, constraints, cases, hints, referenceSolution, explanation, starterCode = starter) {
+export function challenge(title, description, inputFormat, outputFormat, constraints, cases, hints, referenceSolution, explanation, starterCode = starter) {
   const examples = cases.slice(0, 2).map(([input, output, explanation]) => ({ input, output, explanation }));
   const describeExample = (example, index) =>
     `Example ${index + 1}: Input ${JSON.stringify(example.input.replace(/\n$/, ''))}; output ${JSON.stringify(example.output)}. ${example.explanation}`;
@@ -25,6 +25,22 @@ function challenge(title, description, inputFormat, outputFormat, constraints, c
 }
 
 export const beginnerChallenges = {
+  'level-01-problem-1': challenge(
+    'Swap Two Values',
+    'Read two integers and print them in the opposite order.',
+    'Two integers a and b on one line, separated by whitespace.',
+    'Print b followed by a, separated by one space.',
+    ['-1000 <= a, b <= 1000.'],
+    [
+      ['3 7\n', '7 3', 'The second value, 7, is printed before the first value, 3.'],
+      ['-2 5\n', '5 -2', 'The values change places, so 5 comes before -2.'],
+      ['0 0\n', '0 0'], ['-1000 1000\n', '1000 -1000'], ['+007 -02\n', '-2 7'], ['42 42\n', '42 42'], ['0 -1\n', '-1 0'], ['1000 -1000\n', '-1000 1000']
+    ],
+    ['Read both values from the same line.', 'Split the input line into two parts.', 'Convert each part to an integer.', 'Print the second value before the first.', 'Pass both values to print() to separate them with a space.'],
+    'first, second = map(int, input().split())\nprint(second, first)\n',
+    'Read both integers, then print the second value followed by the first.',
+    multipleIntegersStarter
+  ),
   'level-01-problem-2': challenge(
     'Echo a Line',
     'Read one line of text and print the same text without adding a label. Preserve spaces and punctuation.',
