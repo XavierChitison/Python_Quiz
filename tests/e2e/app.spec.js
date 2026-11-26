@@ -725,9 +725,24 @@ test('workspace, levels, and settings reflow without horizontal page overflow', 
       }
       const widths = await page.evaluate(() => ({
         document: document.documentElement.scrollWidth,
-        viewport: document.documentElement.clientWidth
+        viewport: document.documentElement.clientWidth,
+        overflowingElements: [...document.body.querySelectorAll('*')]
+          .map(element => {
+            const rect = element.getBoundingClientRect();
+            return {
+              element: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ''}${typeof element.className === 'string' && element.className ? `.${element.className.trim().replace(/\s+/g, '.')}` : ''}`,
+              left: Math.round(rect.left),
+              right: Math.round(rect.right),
+              scrollWidth: element.scrollWidth,
+              clientWidth: element.clientWidth,
+              text: (element.innerText || '').trim().slice(0, 60)
+            };
+          })
+          .filter(element => element.right > document.documentElement.clientWidth + 1 || element.scrollWidth > element.clientWidth + 1)
+          .sort((left, right) => right.right - left.right)
+          .slice(0, 12)
       }));
-      expect(widths.document, `${route} overflow at ${width}px`).toBeLessThanOrEqual(widths.viewport);
+      expect(widths.document, `${route} overflow at ${width}px: ${JSON.stringify(widths)}`).toBeLessThanOrEqual(widths.viewport);
       if (route.endsWith('levels') && width <= 900) {
         const tileHeights = await page.locator('.level-grid .level-tile').evaluateAll(elements =>
           elements.map(element => {
