@@ -48,7 +48,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .status-chip strong { color: var(--purple-light); }
 .icon-button { min-width: 36px; min-height: 36px; display: inline-grid; place-items: center; padding: 0 9px; color: var(--muted); border: 1px solid var(--line); border-radius: 9px; background: var(--surface); transition: .16s ease; }
 .icon-button:hover { color: var(--text); border-color: #53617a; background: var(--surface-raised); }
-.music-control-group { display: flex; align-items: center; gap: 4px; }
 .music-toggle, .music-menu summary { min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 9px; color: #d7ddec; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.025); cursor: pointer; font-size: 11px; list-style: none; white-space: nowrap; }
 .music-toggle:hover, .music-menu summary:hover { border-color: #53617a; background: var(--surface-raised); }
 .music-toggle-icon { color: var(--purple-light); font-size: 15px; }
@@ -57,7 +56,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .music-menu summary { width: 34px; justify-content: center; padding: 0; }
 .music-menu summary::-webkit-details-marker { display: none; }
 .music-menu summary span:first-child { color: var(--purple-light); font-size: 15px; }
-.music-popover { position: absolute; z-index: 25; top: calc(100% + 8px); right: 0; width: min(290px,calc(100vw - 24px)); padding: 13px; border: 1px solid #38445a; border-radius: 12px; background: #111827; box-shadow: 0 14px 36px #000b; }
+.sound-toggle-icon { width: 18px; height: 18px; fill: currentColor; }
+.music-popover { position: absolute; z-index: 25; top: calc(100% + 8px); right: 0; width: min(290px,calc(100vw - 48px)); max-height: min(420px,calc(100vh - 112px)); max-height: min(420px,calc(100dvh - 112px)); overflow-y: auto; overscroll-behavior: contain; padding: 13px; border: 1px solid #38445a; border-radius: 12px; background: #111827; box-shadow: 0 14px 36px #000b; }
 .music-popover p { display: grid; gap: 4px; margin: 0 0 11px; font-size: 12px; }
 .music-popover p span { color: var(--muted); font-size: 10px; }
 .music-actions { display: flex; gap: 7px; }
@@ -309,7 +309,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .world-toggle { min-height: 56px; }
 }
 @media (max-width: 620px) {
-  .topbar { position: static; padding: max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left)); }
+  .topbar { position: relative; z-index: 20; padding: max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left)); }
   .brand { min-width: 0; max-width: 100%; }
   .brand-name { min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
   .brand img { width: 31px; height: 31px; }

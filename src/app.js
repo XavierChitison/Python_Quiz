@@ -1,12 +1,12 @@
-import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.3';
+import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.4';
 import {
   clearApplicationData, createDefaultProgress, exportBackup, getDraft, normalizeProgress,
   progressSnapshot, saveDraft, saveProgress, validateBackup
-} from './services/storage.js?v=2.4.3';
-import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.3';
-import { runPython, stopPython } from './services/python-runner.js?v=2.4.3';
-import { audioController, playSound } from './services/audio.js?v=2.4.3';
-import { celebrate } from './services/effects.js?v=2.4.3';
+} from './services/storage.js?v=2.4.4';
+import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.4';
+import { runPython, stopPython } from './services/python-runner.js?v=2.4.4';
+import { audioController, playSound } from './services/audio.js?v=2.4.4';
+import { celebrate } from './services/effects.js?v=2.4.4';
 
 const REMOVED_ROUTES = new Set([
   'dashboard', 'roadmap', 'generator', 'playground', 'debugging', 'prediction',
@@ -60,11 +60,16 @@ export class App {
     this.editorProblemId = null;
     this.audioUnsubscribe = audioController.subscribe(state => this.updateAudioControls(state));
     this.audioGestureHandler = event => {
-      if (event.target instanceof Element && event.target.closest('[data-action="music-toggle"]')) return;
+      if (event.target instanceof Element && event.target.closest('.music-menu')) return;
       audioController.unlock();
     };
     document.addEventListener('pointerdown', this.audioGestureHandler, { passive: true });
     document.addEventListener('keydown', this.audioGestureHandler);
+    this.musicDismissHandler = event => {
+      const menu = this.root.querySelector('.music-menu');
+      if (menu?.open && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener('pointerdown', this.musicDismissHandler, { capture: true });
     audioController.applySettings(this.progress.settings);
     this.render();
     this.root.addEventListener('click', event => this.handleClick(event));
@@ -208,31 +213,39 @@ export class App {
         <div class="top-status">
           <span class="status-chip"><strong>LV ${currentLevel(this.progress)}</strong></span>
           <span class="status-chip" title="Consecutive local calendar days practiced">🔥 ${this.progress.profile.streak || 0}</span>
-          <div class="music-control-group">
-            <button class="music-toggle" type="button" data-action="music-toggle" aria-label="Music off (background music)" aria-pressed="false" title="Music off">
+          <button class="icon-button sound-toggle" data-action="sound-toggle" aria-label="${this.progress.settings.soundEnabled ? 'Mute sound effects' : 'Enable sound effects'}" aria-pressed="${Boolean(this.progress.settings.soundEnabled)}">
+            <svg class="sound-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 9v6h4l5 4V5L7 9H3z"></path>
+              ${this.progress.settings.soundEnabled
+                ? '<path d="M16 9a5 5 0 0 1 0 6m2.5-9a9 9 0 0 1 0 12"></path>'
+                : '<path d="m16 9 5 6m0-6-5 6"></path>'}
+            </svg>
+          </button>
+          <details class="music-menu">
+            <summary id="music-control-toggle" class="music-toggle" aria-controls="music-popover" aria-expanded="false" aria-label="Music off; Off; open music controls" title="Music off">
               <span class="music-toggle-icon" aria-hidden="true">♪</span>
               <span id="music-control-status" class="music-status-full">Music off</span>
               <span id="music-control-status-compact" class="music-status-compact" aria-hidden="true">Off</span>
-            </button>
-            <details class="music-menu">
-              <summary aria-label="More music controls" title="More music controls"><span aria-hidden="true">...</span></summary>
-              <div class="music-popover" aria-label="Background music controls">
-                <p><strong id="music-track-name">Coding Focus</strong><span id="music-playback-status" role="status">Music is off</span></p>
-                <div class="music-actions">
-                  <button class="icon-button" data-action="music-playback" aria-label="Enable background music">▶</button>
-                  <button class="icon-button" data-action="music-mute" aria-label="Mute background music" aria-pressed="false">◖</button>
-                  <button class="icon-button" data-action="music-next" aria-label="Play next music track">⏭</button>
-                </div>
-                <label class="music-volume"><span>Music volume</span><input type="range" min="0" max="1" step="0.01" data-setting="musicVolume" aria-label="Music volume" aria-valuetext="${Math.round(this.progress.settings.musicVolume * 100)}%"><output data-value-for="musicVolume">${Math.round(this.progress.settings.musicVolume * 100)}%</output></label>
+            </summary>
+            <div class="music-popover" id="music-popover" role="region" aria-label="Music controls">
+              <p><strong id="music-track-name">Coding Focus</strong><span id="music-playback-status" role="status">Music is off</span></p>
+              <div class="music-actions">
+                <button class="icon-button" data-action="music-playback" aria-label="Enable background music">▶</button>
+                <button class="icon-button" data-action="music-mute" aria-label="Mute background music" aria-pressed="false">◖</button>
+                <button class="icon-button" data-action="music-next" aria-label="Play next music track">⏭</button>
               </div>
-            </details>
-          </div>
-          <button class="icon-button" data-action="sound-toggle" aria-label="${this.progress.settings.soundEnabled ? 'Mute sound effects' : 'Enable sound effects'}" aria-pressed="${Boolean(this.progress.settings.soundEnabled)}">${this.progress.settings.soundEnabled ? '♫' : '♪'}</button>
+              <label class="music-volume"><span>Music volume</span><input type="range" min="0" max="1" step="0.01" data-setting="musicVolume" aria-label="Music volume" aria-valuetext="${Math.round(this.progress.settings.musicVolume * 100)}%"><output data-value-for="musicVolume">${Math.round(this.progress.settings.musicVolume * 100)}%</output></label>
+            </div>
+          </details>
         </div>
       </header>
       <main id="main-content" class="main-content page-enter" tabindex="-1">${this.renderPage(route)}</main>
       <div id="overlay-root"></div>
       <div class="toast-region" id="toast-region" aria-live="polite"></div>`;
+    this.root.querySelector('.music-menu')?.addEventListener('toggle', event => {
+      const menu = event.currentTarget;
+      this.root.querySelector('#music-control-toggle')?.setAttribute('aria-expanded', String(menu.open));
+    });
     if (route.page === 'problem') {
       const problem = problems.find(item => item.id === route.id);
       if (problem) {
@@ -520,12 +533,6 @@ export class App {
       this.updateSetting('soundEnabled', !this.progress.settings.soundEnabled, false);
       if (this.progress.settings.soundEnabled) playSound('click', this.progress.settings, true);
       this.render();
-    } else if (action === 'music-toggle') {
-      if (audioController.getState().status === 'blocked' && this.progress.settings.musicEnabled) {
-        audioController.unlock();
-      } else {
-        this.updateSetting('musicEnabled', !this.progress.settings.musicEnabled, false);
-      }
     } else if (action === 'music-playback') {
       if (audioController.getState().playing) {
         this.progress.settings.musicPaused = true;
@@ -655,6 +662,13 @@ export class App {
   handleKeydown(event) {
     if (event.key === 'Escape' && this.root.querySelector('.modal-backdrop')) {
       this.closeModal();
+      return;
+    }
+    const musicMenu = this.root.querySelector('.music-menu[open]');
+    if (event.key === 'Escape' && musicMenu) {
+      event.preventDefault();
+      musicMenu.open = false;
+      this.root.querySelector('#music-control-toggle')?.focus();
       return;
     }
     if (event.key === 'Tab') {
@@ -1171,7 +1185,7 @@ export class App {
   updateAudioControls(state) {
     const status = this.root.querySelector('#music-control-status');
     const compactStatus = this.root.querySelector('#music-control-status-compact');
-    const musicToggle = this.root.querySelector('[data-action="music-toggle"]');
+    const musicToggle = this.root.querySelector('#music-control-toggle');
     const musicIcon = this.root.querySelector('.music-toggle-icon');
     const musicSetting = this.root.querySelector('[data-setting="musicEnabled"]');
     const playbackStatus = this.root.querySelector('#music-playback-status');
@@ -1189,16 +1203,16 @@ export class App {
         : state.enabled ? state.playing ? state.muted ? 'Muted' : 'On' : 'Paused'
           : 'Off';
     if (musicToggle) {
-      musicToggle.setAttribute('aria-label', `${statusText} (background music)`);
-      musicToggle.setAttribute('aria-pressed', String(state.enabled));
+      musicToggle.setAttribute('aria-label', `${statusText}; ${compactStatus?.textContent || statusText}; open music controls`);
       musicToggle.title = statusText;
     }
     if (musicSetting) musicSetting.checked = state.enabled;
-    if (musicIcon) musicIcon.textContent = state.enabled ? '♫' : '♪';
+    if (musicIcon) musicIcon.textContent = state.playing ? '♫' : state.enabled ? 'Ⅱ' : '♪';
     if (playbackStatus) {
-      playbackStatus.textContent = state.playing ? state.muted ? 'Playing (muted)' : 'Playing' : state.status === 'blocked'
-        ? 'Playback is waiting for a user gesture.'
-        : state.status === 'unavailable' ? 'Audio is not available in this browser.' : 'Paused';
+      playbackStatus.textContent = state.playing ? state.muted ? 'Playing (muted)' : 'Playing'
+        : state.status === 'blocked' ? 'Playback is waiting for a user gesture.'
+          : state.status === 'unavailable' ? 'Audio is not available in this browser.'
+            : state.enabled ? 'Paused' : 'Music is off';
     }
     if (track) track.textContent = state.track;
     if (playButton) {

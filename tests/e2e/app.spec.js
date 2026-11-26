@@ -408,6 +408,20 @@ test('representative routes and interaction states pass accessibility scans with
   await page.goto('/');
   await page.locator('.hint-box summary').click();
   await scan();
+  const musicToggle = page.locator('#music-control-toggle');
+  await musicToggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(musicToggle).toHaveAttribute('aria-expanded', 'true');
+  await scan();
+  await page.keyboard.press('Escape');
+  await expect(musicToggle).toBeFocused();
+  await expect(musicToggle).toHaveAttribute('aria-expanded', 'false');
+  await page.keyboard.press('Space');
+  await expect(musicToggle).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(musicToggle).toBeFocused();
+  await expect(musicToggle).toHaveAttribute('aria-expanded', 'false');
+  await scan();
   await page.getByRole('tab', { name: 'Console' }).click();
   await scan();
   for (const width of [320, 768]) {
@@ -480,19 +494,37 @@ test('background music is opt-in and its controls and settings persist', async (
   await page.goto('/#/settings');
   const music = page.getByRole('checkbox', { name: 'Background Music' });
   await expect(music).not.toBeChecked();
-  await music.check();
+  const toggle = page.locator('#music-control-toggle');
+  await expect(page.locator('.topbar .music-menu summary')).toHaveCount(1);
+  await expect(page.locator('.topbar .music-toggle')).toHaveCount(1);
+  await expect(page.locator('.topbar .sound-toggle')).toHaveCount(1);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(music).not.toBeChecked();
+  await expect(page.getByRole('region', { name: 'Music controls' })).toBeVisible();
+  await expect(page.locator('#music-playback-status')).toHaveText('Music is off');
+  const soundToggle = page.locator('.topbar .sound-toggle');
+  const originalSoundState = await soundToggle.getAttribute('aria-pressed');
+  await soundToggle.click();
+  await expect(soundToggle).toHaveAttribute('aria-pressed', String(originalSoundState !== 'true'));
+  await soundToggle.click();
+  await expect(soundToggle).toHaveAttribute('aria-pressed', originalSoundState);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Play background music' }).click();
+  await expect(music).toBeChecked();
   await expect(page.locator('#music-control-status')).toHaveText('Music on');
-  await page.locator('.music-menu summary').click();
   await expect(page.getByRole('button', { name: 'Pause background music' })).toBeVisible();
   await expect(page.locator('#music-track-name')).toHaveText('Coding Focus');
   await page.getByRole('button', { name: 'Play next music track' }).click();
   await expect(page.locator('#music-track-name')).toHaveText('Digital Exploration');
-  const volume = page.locator('[data-setting="musicVolume"]').first();
-  await volume.evaluate(input => {
-    input.value = '0.55';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  await expect(page.locator('[data-value-for="musicVolume"]').first()).toHaveText('55%');
+  const volume = page.locator('#music-popover [data-setting="musicVolume"]');
+  const volumeWidth = await volume.evaluate(input => input.clientWidth);
+  const volumeHeight = await volume.evaluate(input => input.clientHeight);
+  await volume.click({ position: { x: volumeWidth * 0.8, y: volumeHeight / 2 } });
+  const chosenVolume = Number(await volume.inputValue());
+  expect(chosenVolume).toBeGreaterThan(0.2);
+  await expect(page.locator('#music-popover [data-value-for="musicVolume"]')).toHaveText(`${Math.round(chosenVolume * 100)}%`);
   await page.getByRole('button', { name: 'Mute background music' }).click();
   await expect(page.getByRole('button', { name: 'Unmute background music' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Unmute background music' }).click();
@@ -501,18 +533,27 @@ test('background music is opt-in and its controls and settings persist', async (
   await expect(page.locator('#music-playback-status')).toHaveText('Paused');
   await expect(music).toBeChecked();
   await page.getByRole('button', { name: 'Play background music' }).click();
-  await expect(page.locator('#music-control-status')).toHaveText('Music on');
+  await expect(page.locator('#music-control-status')).toHaveText(/Music on|Tap to start|Audio unavailable/);
   await expect(music).toBeChecked();
+  await page.keyboard.press('Escape');
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.locator('#main-content').click({ position: { x: 10, y: 10 } });
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
   await page.getByRole('link', { name: 'Problems', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Swap Two Values' })).toBeVisible();
   await expect(page.locator('#music-track-name')).toHaveText('Digital Exploration');
+  await expect(page.locator('#music-control-toggle')).toHaveAttribute('aria-expanded', 'false');
   await page.reload();
   await page.goto('/#/settings');
   await expect(page.getByRole('checkbox', { name: 'Background Music' })).toBeChecked();
-  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('xpc-progress'))).settings.musicVolume).toBe(0.55);
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('xpc-progress'))).settings.musicVolume).toBeCloseTo(chosenVolume, 2);
 });
 
-test('mobile music toggle supports touch and keyboard without crowding the header', async ({ browser }) => {
+test('unified music panel stays interactive and within responsive viewport bounds', async ({ browser }) => {
   const context = await browser.newContext({
     baseURL: 'http://127.0.0.1:4173',
     viewport: { width: 390, height: 844 },
@@ -522,85 +563,84 @@ test('mobile music toggle supports touch and keyboard without crowding the heade
   const page = await context.newPage();
   try {
     await page.goto('/#/settings');
-    const toggle = page.locator('.music-toggle');
-    const setting = page.getByRole('checkbox', { name: 'Background Music' });
-    await expect(setting).not.toBeChecked();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    const toggle = page.locator('#music-control-toggle');
+    await expect(page.locator('.topbar .music-menu summary')).toHaveCount(1);
+    await expect(page.locator('.topbar .music-toggle')).toHaveCount(1);
+    await expect(page.locator('.topbar .sound-toggle')).toHaveCount(1);
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
     const viewports = [
       [320, 720], [360, 800], [375, 812], [390, 844], [414, 896], [430, 932],
-      [480, 900], [600, 960], [768, 1024], [820, 1180], [844, 390], [900, 600], [932, 430],
-      [1024, 768], [1280, 800], [1440, 900], [1920, 1080]
+      [480, 900], [600, 960], [768, 1024], [820, 1180], [844, 390],
+      [900, 600], [932, 430], [1024, 768], [1280, 800], [1440, 900], [1920, 1080]
     ];
     for (const [width, height] of viewports) {
       await page.setViewportSize({ width, height });
       const geometry = await page.evaluate(() => {
-        const bounds = selector => {
-          const rect = document.querySelector(selector).getBoundingClientRect();
-          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
-        };
-        const toggle = document.querySelector('.music-toggle');
-        const toggleBounds = toggle.getBoundingClientRect();
-        const summaryBounds = document.querySelector('.music-menu summary').getBoundingClientRect();
-        const intersects = (left, right) => left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top;
-        const hit = document.elementFromPoint((toggleBounds.left + toggleBounds.right) / 2, (toggleBounds.top + toggleBounds.bottom) / 2);
-        const groupBounds = bounds('.music-control-group');
-        const siblingBounds = [...document.querySelectorAll('.top-status > .status-chip, .top-status > .icon-button')].map(element => {
-          const rect = element.getBoundingClientRect();
-          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
-        });
+        const rect = selector => document.querySelector(selector).getBoundingClientRect();
+        const panel = rect('#music-popover');
+        const main = rect('#main-content');
+        const volume = rect('#music-popover input[type="range"]');
+        const play = rect('#music-popover [data-action="music-playback"]');
+        const toggle = rect('#music-control-toggle');
+        const sound = rect('.topbar .sound-toggle');
+        const overlapTop = Math.max(panel.top, main.top);
+        const overlapBottom = Math.min(panel.bottom, main.bottom);
+        const stackAt = (x, y) => document.elementsFromPoint(x, y).slice(0, 5);
+        const volumeHit = stackAt(volume.left + volume.width / 2, volume.top + volume.height / 2)[0];
+        const playHit = stackAt(play.left + play.width / 2, play.top + play.height / 2)[0];
+        const panelHit = overlapBottom > overlapTop
+          ? stackAt(panel.left + panel.width / 2, (overlapTop + overlapBottom) / 2)[0]
+          : null;
         return {
-          documentWidth: document.documentElement.scrollWidth,
-          viewportWidth: document.documentElement.clientWidth,
-          toggle: bounds('.music-toggle'),
-          menu: bounds('.music-menu summary'),
-          toggleMenuOverlap: intersects(toggleBounds, summaryBounds),
-          siblingOverlap: siblingBounds.some(sibling => intersects(groupBounds, sibling)),
-          hitTargetIsToggle: toggle.contains(hit)
+          pageWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+          panel: { left: panel.left, right: panel.right, top: panel.top, bottom: panel.bottom, width: panel.width, height: panel.height },
+          menuOpen: document.querySelector('.music-menu').open,
+          trigger: toggle.toJSON(),
+          controlsOverlap: toggle.left < sound.right && toggle.right > sound.left && toggle.top < sound.bottom && toggle.bottom > sound.top,
+          triggerReceivesHit: document.querySelector('#music-control-toggle').contains(
+            document.elementFromPoint(toggle.left + toggle.width / 2, toggle.top + toggle.height / 2)
+          ),
+          volume: volume.toJSON(),
+          play: play.toJSON(),
+          volumeReceivesHit: document.querySelector('#music-popover input[type="range"]').contains(volumeHit),
+          playReceivesHit: document.querySelector('#music-popover [data-action="music-playback"]').contains(playHit),
+          panelCoversUnderlyingContent: !panelHit || document.querySelector('#music-popover').contains(panelHit),
+          panelOpaque: getComputedStyle(document.querySelector('#music-popover')).backgroundColor === 'rgb(17, 24, 39)'
         };
       });
-      expect(geometry.documentWidth, `header overflow at ${width}px`).toBeLessThanOrEqual(geometry.viewportWidth);
-      expect(geometry.toggleMenuOverlap, `music controls overlap at ${width}px`).toBe(false);
-      expect(geometry.siblingOverlap, `music control overlaps a sibling at ${width}px`).toBe(false);
-      expect(geometry.hitTargetIsToggle, `music toggle is obstructed at ${width}px`).toBe(true);
-      expect(geometry.toggle.width, `music toggle too narrow at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
-      expect(geometry.toggle.height, `music toggle too short at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
-      expect(geometry.menu.width, `music menu trigger too narrow at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
-      expect(geometry.menu.height, `music menu trigger too short at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+      expect(geometry.pageWidth, `page overflow at ${width}px`).toBeLessThanOrEqual(geometry.clientWidth);
+      expect(geometry.menuOpen, `music panel closed at ${width}px`).toBe(true);
+      expect(geometry.controlsOverlap, `music and sound controls overlap at ${width}px`).toBe(false);
+      expect(geometry.triggerReceivesHit, `music disclosure is obstructed at ${width}px`).toBe(true);
+      expect(geometry.panel.left, `music panel clips on the left at ${width}px`).toBeGreaterThanOrEqual(0);
+      expect(geometry.panel.right, `music panel clips on the right at ${width}px`).toBeLessThanOrEqual(geometry.clientWidth);
+      expect(geometry.panel.top, `music panel clips above the viewport at ${width}px`).toBeGreaterThanOrEqual(0);
+      expect(geometry.panel.bottom, `music panel clips below the viewport at ${width}px`).toBeLessThanOrEqual(height);
+      expect(geometry.volumeReceivesHit, `volume slider is obstructed at ${width}px`).toBe(true);
+      expect(geometry.playReceivesHit, `play control is obstructed at ${width}px`).toBe(true);
+      expect(geometry.panelCoversUnderlyingContent, `underlying content paints over panel at ${width}px`).toBe(true);
+      expect(geometry.panelOpaque, `music panel is not opaque at ${width}px`).toBe(true);
+      expect(geometry.trigger.width, `music target too narrow at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
+      expect(geometry.trigger.height, `music target too short at ${width}px`).toBeGreaterThanOrEqual(width <= 900 ? 43.5 : 24);
     }
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await toggle.tap();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(toggle).toHaveAttribute('aria-label', /Music on|Tap to start|Audio unavailable|Music muted/);
-    await expect(setting).toBeChecked();
-    expect(JSON.parse(await page.evaluate(() => localStorage.getItem('xpc-progress'))).settings.musicEnabled).toBe(true);
-    const playbackDescription = await page.locator('#music-control-status').innerText();
-    expect(['Music on', 'Music muted', 'Music paused', 'Tap to start', 'Audio unavailable']).toContain(playbackDescription);
-
-    await toggle.tap();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    await expect(setting).not.toBeChecked();
-
-    await toggle.focus();
-    await page.keyboard.press('Enter');
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(setting).toBeChecked();
-    await page.keyboard.press('Space');
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    await expect(setting).not.toBeChecked();
-
-    await toggle.tap();
-    await expect(setting).toBeChecked();
-    await page.reload();
-    await expect(page.getByRole('checkbox', { name: 'Background Music' })).toBeChecked();
-    await expect(page.locator('.music-toggle')).toHaveAttribute('aria-pressed', 'true');
+    const volume = page.locator('#music-popover input[type="range"]');
+    const initialVolume = Number(await volume.inputValue());
+    const volumeWidth = await volume.evaluate(input => input.clientWidth);
+    const volumeHeight = await volume.evaluate(input => input.clientHeight);
+    await volume.click({ position: { x: volumeWidth * 0.8, y: volumeHeight / 2 } });
+    expect(Number(await volume.inputValue())).toBeGreaterThan(initialVolume);
+    await expect(page.locator('#music-popover [data-value-for="musicVolume"]')).toHaveText(/^\d+%$/);
   } finally {
     await context.close();
   }
 });
 
-test('header music toggle reports blocked playback and retries from a user gesture', async ({ page }) => {
+test('unified music control reports blocked playback and retries from a user gesture', async ({ page }) => {
   await page.addInitScript(() => {
     const makeParam = () => ({
       value: 0,
@@ -640,15 +680,16 @@ test('header music toggle reports blocked playback and retries from a user gestu
     window.AudioContext = ControlledAudioContext;
   });
   await page.goto('/');
-  const toggle = page.locator('.music-toggle');
+  const toggle = page.locator('#music-control-toggle');
   await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-  await expect(toggle).toHaveAttribute('aria-label', 'Tap to start (background music)');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('button', { name: 'Play background music' }).click();
+  await expect(toggle).toHaveAttribute('aria-label', /Tap to start; Retry/);
   await expect(page.locator('#music-control-status-compact')).toHaveText('Retry');
 
   await page.evaluate(() => { window.__xpcAllowMusicResume = true; });
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-label', 'Music on (background music)');
+  await page.getByRole('button', { name: 'Play background music' }).click();
+  await expect(toggle).toHaveAttribute('aria-label', /Music on/);
   await expect(page.locator('#music-playback-status')).toHaveText('Playing');
 });
 

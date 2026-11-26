@@ -1,5 +1,11 @@
 # Test report
 
+## Unified music controls — local 2.4.4 verification
+
+- The focused Playwright run passed all 4 music-panel and accessibility tests, including the 17 responsive viewport checks, SFX button independence, Enter/Space activation, Escape dismissal, and blocked-playback retry.
+- The panel was captured open at 320px mobile, 768px tablet, and 844×390px landscape; Playwright also measured it within the viewport at 1440×900px. The 320px panel covered the underlying level text without overlap or hit-test obstruction.
+- The browser run was local. GitHub Pages still serves 2.4.3; 2.4.4 has not been deployed.
+
 ## Verification results
 
 - `npm test`: 103 tests passed across 25 unit-test files.
