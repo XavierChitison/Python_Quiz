@@ -229,9 +229,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .form-control input, .form-control select { min-height: 40px; padding: 0 10px; color: var(--text); border: 1px solid #344057; border-radius: 9px; background: #111927; }
 .form-full { grid-column: 1/-1; }
 .result-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 14px 0; }
-.setting-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.setting-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; min-width: 0; }
+.setting-card { min-width: 0; }
 .setting-card h2 { margin: 0 0 13px; font-size: 14px; }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(115,132,165,.13); color: #d7deea; font-size: 11px; }
+.setting-row > span { min-width: 0; }
 .setting-row:last-child { border-bottom: 0; }
 .setting-row small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
 .toggle { width: 42px; height: 24px; flex: 0 0 auto; appearance: none; border: 1px solid #47536a; border-radius: 20px; background: #253044; cursor: pointer; transition: .18s ease; }
@@ -325,7 +327,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .world-toggle { padding-inline: 11px; }
   .level-grid { grid-template-columns: repeat(5,minmax(44px,1fr)); }
   .selected-level { grid-template-columns: 1fr; }
-  .setting-grid, .assessment-form { grid-template-columns: 1fr; }
+  .setting-grid, .assessment-form { grid-template-columns: minmax(0,1fr); }
   .form-full { grid-column: auto; }
   .result-grid { grid-template-columns: repeat(2,1fr); }
   .daily-card { grid-template-columns: 1fr; padding: 17px; }

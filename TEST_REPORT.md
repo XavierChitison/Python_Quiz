@@ -15,4 +15,5 @@
 
 - Playwright Chromium was available. Firefox and WebKit executables were not installed; no other browser engine was tested.
 - No physical mobile/tablet, screen reader, audible-speaker, virtual-keyboard, pinch-zoom, or real-device safe-area test was performed.
-- These responsive and accessibility changes have not yet been verified on GitHub Pages. Production status must be updated after deployment checks; do not infer production success from local tests.
+- Production GitHub Pages served the versioned 2.3.0 module and stylesheet. With browser cache disabled, Chromium verified the 320px workspace, All Levels, and Settings layouts; each fit the 305px content area after the classic scrollbar, and sampled touch targets met 44px dimensions.
+- The production Python runtime executed the first challenge's reference solution and printed `7 3`. The representative All Levels and Settings routes loaded, with no browser page errors or failed network requests.

@@ -43,6 +43,7 @@ The touch-enabled phone workflow used 390×844, then resized to 844×390 to exer
 - At 768–900px the previous two-column arrangement constrained the challenge/editor panels and left substantial unused vertical space. The workspace now stacks at widths through 900px; the problem list becomes a locally scrollable horizontal strip. At 901px and above, the desktop three-panel layout remains available where it fits.
 - At phone widths the navigation previously centered an overflowing row, clipping the first link. The links now wrap from the start; all five navigation links are checked to remain within the viewport through 480px.
 - Removed the 320px body minimum so a classic scrollbar cannot force horizontal overflow at a 320px viewport.
+- Allowed settings cards and labels to shrink within their mobile grid tracks, avoiding intrinsic-width overflow in narrower browser font environments.
 - Key navigation, problem, execution, editor-toolbar, hint, test-case, level, and tab controls meet a 44px minimum dimension at the tablet/mobile breakpoint; automated checks measure representative target widths and heights.
 - Problem instructions use larger text on narrower displays; mobile page headings and cards stack.
 - Added safe-area padding for notched displays and `viewport-fit=cover`; `100dvh` supplements the existing viewport-height fallback.
