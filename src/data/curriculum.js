@@ -3,6 +3,8 @@ import { beginner0708Challenges } from './beginner-07-08.js';
 import { beginner0910Challenges } from './beginner-09-10.js';
 import { conditions1115Challenges } from './conditions-11-15.js';
 import { conditions1620Challenges } from './conditions-16-20.js';
+import { loops2125Challenges } from './loops-21-25.js';
+import { loops2630Challenges } from './loops-26-30.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -20,7 +22,7 @@ export const stageNames = [
 export const levelTopics = [
   'Printing values','Reading integer input','Geometry calculations','Unit conversions','Everyday calculations','Working with digits','Mathematical expressions','Basic string operations','String transformations','Combining fundamentals',
   'Comparisons and decisions','Boolean comparisons','Ordering and triangles','Thresholds and equations','Character and text decisions','Coordinate conditions','Dates and time intervals','Boolean expressions','Conditional calculations','Conditions review',
-  'For loops','range()','Counting iterations','Summing numbers','Counting evens','Counting odds','Multiplication tables','While loops','Break and continue','Loops review',
+  'Counting and accumulation','Filtered sums and sequences','Digit iteration','Sentinels and stopping conditions','Sequences and divisors','Nested loop patterns','Streaming and runs','Iterative conversion','Number theory loops','Loop applications',
   'String length','Character indexing','String slicing','Uppercase and lowercase','Counting characters','Counting vowels','Counting consonants','Reversing strings','Palindromes','String review',
   'Creating lists','List indexing','Summing lists','List averages','Finding maximum','Finding minimum','Searching targets','Counting occurrences','Second largest','List review',
   'Dictionary basics','Dictionary values','Updating dictionaries','Character frequency','Word frequency','Repeated elements','Set basics','Set intersections','Grouping data','Hash review',
@@ -104,7 +106,8 @@ function makeProblem(level, index) {
     estimatedMinutes: level <= 30 ? 5 : level <= 70 ? 10 : 15
   };
   const replacement = beginnerChallenges[id] || beginner0708Challenges[id] || beginner0910Challenges[id] ||
-    conditions1115Challenges[id] || conditions1620Challenges[id];
+    conditions1115Challenges[id] || conditions1620Challenges[id] ||
+    loops2125Challenges[id] || loops2630Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }

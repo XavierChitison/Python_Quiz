@@ -6,8 +6,9 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 
 - Batch 1 (levels 1–10): implemented and reference-tested; 50 replacements.
 - Batch 2 (levels 11–20): implemented and reference-tested; 50 replacements.
-- Batch 3 (levels 21–30): in progress; batches 4–10 not started.
-- 400 problem records still need replacement and review against the full requirements.
+- Batch 3 (levels 21–30): implemented and reference-tested; 50 replacements.
+- Batch 4 (levels 31–40): in progress; batches 5–10 not started.
+- 350 problem records still need replacement and review against the full requirements.
 - Cross-curriculum semantic uniqueness remains unverified.
 
 ## Implemented objectives
@@ -71,6 +72,8 @@ These objectives use beginner input, output, arithmetic, and string operations. 
 
 Batch 2 adds comparisons, Boolean logic, conditions, dates, and coordinate problems. Its individual objectives and validation statuses are recorded in `CURRICULUM_MANIFEST.md`. Both batches retain eight cases per challenge and at least two explained examples.
 
+Batch 3 adds distinct iteration, digit processing, number theory, and nested-loop problems. Its objectives and validation statuses are recorded in the same manifest; each has eight cases and two explained examples.
+
 ## Compatibility
 
 IDs, draft keys, and level unlocks remain unchanged. Old completions for revised problems are archived separately and are not treated as passing the replacement. Previously completed levels, assessment answers and submissions, and daily completion dates are retained as history; earned XP, streaks, and daily rewards remain intact. Existing drafts remain under their original keys and may need editing for the replacement problem. Re-solving a replacement can award its normal XP again.
@@ -82,13 +85,16 @@ The history is retained in browser storage and backups, but the existing UI has 
 - `npm test`: 36 tests passed, including progress migration and independent JavaScript checks of all 800 Batch 1 and 2 case outputs.
 - Targeted Pyodide validation: all 400/400 Batch 1 reference cases passed, and all 50 starter programs compiled. This does not independently prove semantic uniqueness.
 - Targeted Pyodide validation: all 400/400 Batch 2 reference cases passed, and all 50 starter programs compiled.
+- Targeted Batch 3 tests: 20 tests passed, including progress migration, integration, and independent expected-output checks; all 400/400 Batch 3 reference cases passed in Pyodide, and all 50 starters compiled.
 - Independent boundary checks passed for 1,480 calendar-date, half-open interval, and rotatable-rectangle inputs.
 - Batch 2 cases rejected five representative incorrect approaches involving switch states, degenerate triangles, filename suffixes, empty intervals, and rectangle rotation.
+- Batch 3 cases rejected four representative incorrect approaches involving whitespace, overlapping digit pairs, tied records, and early stopping with negative values.
+- Alternating harmonic-sum rounding was independently checked for all 20 permitted positive term counts.
 - Full browser regression: 28 tests passed before the example-description adjustment and later curriculum changes. Focused browser checks subsequently passed for old progress migration, the new first problem and level progression, and whitespace-preserving multiline output.
 - Representative incorrect solutions for the first problem and all 35 level 4–10 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
-- The duplicate audit of levels 1–20 found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. The remaining 400 generated records have not been replaced. Normalized AST matches are review candidates, not conclusive semantic duplicates.
+- The duplicate audit of levels 1–30 found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. The remaining 350 generated records have not been replaced. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Continue Batch 3 from `level-21-problem-1`, implementing the loop objectives with independently checked outputs, semantic review, targeted validation, and a local commit. Do not publish until all batches and regression tests pass.
+Continue Batch 4 from `level-31-problem-1`, implementing the string objectives with independently checked outputs, semantic review, targeted validation, and a local commit. Do not publish until all batches and regression tests pass.
