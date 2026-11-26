@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { levels, problems } from '../../src/data/curriculum.js';
 
-describe('PyLevel curriculum', () => {
+describe("Xavier's Python Challenge curriculum", () => {
   it('contains exactly 100 levels', () => {
     expect(levels).toHaveLength(100);
   });

@@ -19,7 +19,7 @@ export async function WorkspacePage(id, problems, progress) {
   setTimeout(() => initWorkspace(problem, progress), 0);
   return `
     <div class="workspace">
-      <div class="workspace-header"><div><a href="#problems"><i data-lucide="ArrowLeft"></i> Problem Library</a><span>${problem.topic}</span></div><div><a class="icon-button" href="#workspace/${previous.id}" aria-label="Previous problem"><i data-lucide="ChevronLeft"></i></a><span>${currentIndex + 1} / ${problems.length}</span><a class="icon-button" href="#workspace/${next.id}" aria-label="Next problem"><i data-lucide="ChevronRight"></i></a></div></div>
+      <div class="workspace-header"><div><a href="#problems"><i data-lucide="ArrowLeft"></i> Problem Library</a><span>${problem.topic}</span></div><div><button class="icon-button" id="share-challenge" aria-label="Share this challenge" title="Share challenge"><i data-lucide="Share2"></i></button><a class="icon-button" href="#workspace/${previous.id}" aria-label="Previous problem"><i data-lucide="ChevronLeft"></i></a><span>${currentIndex + 1} / ${problems.length}</span><a class="icon-button" href="#workspace/${next.id}" aria-label="Next problem"><i data-lucide="ChevronRight"></i></a></div></div>
       <div class="workspace-grid">
         <section class="problem-pane" aria-label="Problem description">
           <div class="problem-meta"><span class="difficulty">${problem.difficulty}</span><span>${problem.topic}</span><span>${problem.xpReward} XP</span></div>
@@ -95,6 +95,17 @@ async function initWorkspace(problem, progress) {
   document.getElementById('run-code')?.addEventListener('click', () => runCode(problem, false));
   document.getElementById('submit-code')?.addEventListener('click', () => runCode(problem, true));
   document.getElementById('stop-run')?.addEventListener('click', stopExecution);
+  document.getElementById('share-challenge')?.addEventListener('click', async () => {
+    const url = `${location.origin}${location.pathname}#workspace/${encodeURIComponent(problem.id)}`;
+    const data = {title:problem.title,text:`Try ${problem.title} on Xavier's Python Challenge`,url};
+    try {
+      if (navigator.share) await navigator.share(data);
+      else await navigator.clipboard.writeText(url);
+      alert(navigator.share ? 'Share menu opened.' : 'Challenge link copied.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') alert('Could not share this challenge.');
+    }
+  });
 }
 
 function stopExecution() {
@@ -182,7 +193,7 @@ function finishRun() {
   document.getElementById('submission-results').innerHTML = `<div class="submission-summary ${accepted?'success':'failure'}"><strong>${accepted?'Accepted':'Submission rejected'}</strong><span>${run.passed}/${run.cases.length} test cases passed</span></div>${visibleResults.map((r,i)=>`<div class="test-detail"><div><strong>Test ${i+1}</strong><span class="${r.passed?'accepted':'failed'}">${r.passed?'Passed':'Failed'}</span></div><small>Expected: ${r.tc.output}</small><small>Actual: ${r.actual || '(no output)'}</small>${r.error?`<small class="error-text">${r.error}</small>`:''}</div>`).join('')}`;
   document.querySelector('[data-tab="results"]')?.click();
 
-  const progress = JSON.parse(localStorage.getItem('pylevel-progress') || '{}');
+  const progress = JSON.parse(localStorage.getItem('xpc-progress') || localStorage.getItem('pylevel-progress') || '{}');
   progress.profile ||= { name:'Learner', level:1, xp:0, streak:0 };
   progress.solved ||= [];
   progress.submissions ||= [];

@@ -1,0 +1,10 @@
+{
+  "name": "Xavier's Python Challenge",
+  "short_name": "XPC",
+  "description": "Completely free Python learning and coding interview practice.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0B1019",
+  "theme_color": "#0B1019",
+  "icons": [{"src":"./favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}

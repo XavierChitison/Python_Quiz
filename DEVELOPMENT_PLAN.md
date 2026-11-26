@@ -1,4 +1,4 @@
-# PyLevel Development Plan
+# Xavier's Python Challenge Development Plan
 
 - [x] Foundation and design system
 - [x] 100-level curriculum and 500 challenge instances

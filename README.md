@@ -1,6 +1,6 @@
-# PyLevel
+# Xavier's Python Challenge
 
-PyLevel is a local-first, browser-based Python learning and coding interview practice platform.
+Xavier's Python Challenge is a completely free, local-first browser platform for Python learning and technical interview preparation.
 
 ## Features
 - 100-level curriculum with 500 initial challenge instances
@@ -34,3 +34,10 @@ The first run downloads Pyodide from the jsDelivr CDN. Python executes inside a 
 
 ## Data
 Learner progress is persisted in browser storage and local IndexedDB-backed/local profile data. Export progress from Settings for backup. Import and full restoration are documented as future work.
+
+## Static hosting
+Run `npm run build` and publish the `dist` directory. Relative Vite assets are configured for static subdirectory hosting.
+
+Recommended: Cloudflare Pages or Netlify's free tier. Neither requires a backend for this application. Do not commit a custom domain or payment configuration.
+
+Each browser profile maintains independent progress. Export JSON from Settings to transfer progress to another browser or device.

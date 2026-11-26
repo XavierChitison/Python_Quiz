@@ -56,12 +56,19 @@ export const storage = {
 
 export function progressSnapshot() {
   try {
-    return JSON.parse(localStorage.getItem('pylevel-progress') || '{}');
+    const saved = localStorage.getItem('xpc-progress');
+    if (saved) return JSON.parse(saved);
+    const legacy = localStorage.getItem('pylevel-progress');
+    if (!legacy) return {};
+    const parsed = JSON.parse(legacy);
+    localStorage.setItem('xpc-progress', JSON.stringify(parsed));
+    return parsed;
   } catch {
     return {};
   }
 }
 
 export function saveProgress(snapshot) {
+  localStorage.setItem('xpc-progress', JSON.stringify(snapshot));
   localStorage.setItem('pylevel-progress', JSON.stringify(snapshot));
 }

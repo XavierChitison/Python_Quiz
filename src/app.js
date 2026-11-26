@@ -8,7 +8,7 @@ const nav = [
   ]},
   { group: 'Practice', items: [
     ['problems','Code2','Problem Library'], ['generator','Sparkles','Generate Problem'], ['interview','Timer','Interview Practice'],
-    ['debugging','Bug','Debugging Challenges'], ['playground','TerminalSquare','Python Playground']
+    ['debugging','Bug','Debugging Challenges'], ['prediction','BrainCircuit','Code Prediction'], ['playground','TerminalSquare','Python Playground']
   ]},
   { group: 'Learning', items: [
     ['lessons','BookOpen','Python Lessons'], ['guided','Route','Guided Learning'], ['review','RotateCcw','Review Practice'], ['mistakes','NotebookTabs','Mistake Notebook']
@@ -16,7 +16,7 @@ const nav = [
   { group: 'Progress', items: [
     ['analytics','ChartNoAxesCombined','Analytics'], ['history','History','Submission History'], ['achievements','Award','Achievements']
   ]},
-  { group: 'Account', items: [['settings','Settings','Settings'], ['help','CircleHelp','Help and Documentation']] }
+  { group: 'Preferences', items: [['settings','Settings','Settings'], ['help','CircleHelp','Help and Documentation'], ['about','Info','About']] }
 ];
 
 export class App {
@@ -47,7 +47,10 @@ export class App {
     this.root.innerHTML = `
       <div class="app-shell ${this.state.sidebarCollapsed ? 'sidebar-collapsed' : ''}">
         <aside class="sidebar" aria-label="Primary navigation">
-          <a class="brand" href="#dashboard" aria-label="PyLevel dashboard"><span class="brand-mark">&lt;/&gt;</span><span class="brand-name">PyLevel</span></a>
+          <a class="brand" href="#dashboard" aria-label="XPC - Xavier's Python Challenge dashboard">
+            <img class="brand-logo" src="./xpc-logo.svg" alt="" />
+            <span class="brand-name">XPC</span>
+          </a>
           <nav class="nav-scroll">
             ${nav.map(group => `<div class="nav-group"><div class="nav-label">${group.group}</div>${group.items.map(item => `
               <a class="nav-item ${this.state.route === item[0] ? 'active' : ''}" href="#${item[0]}" ${this.state.route === item[0] ? 'aria-current="page"' : ''}>
@@ -68,10 +71,15 @@ export class App {
               <span class="level-pill">Level ${this.progress.profile.level}</span>
               <span class="xp-pill">${this.progress.profile.xp} XP</span>
               <button class="icon-button" id="theme-toggle" aria-label="Toggle theme"><i data-lucide="${this.progress.settings.theme === 'dark' ? 'Sun' : 'Moon'}"></i></button>
+              <button class="icon-button" id="share-site" aria-label="Share Xavier's Python Challenge" title="Share website"><i data-lucide="Share2"></i></button>
               <button class="avatar" id="profile-button" aria-label="Open profile">${(this.progress.profile.name || 'L')[0].toUpperCase()}</button>
             </div>
           </header>
           <main id="main-content" tabindex="-1"></main>
+          <footer class="app-footer">
+            <div><strong>Xavier's Python Challenge</strong><span>Start Simple. Think Better. Code Confidently.</span></div>
+            <div><span>Created by Xavier Chitison.</span><a href="#about">About</a><a href="#help">Help</a><a href="#privacy">Privacy</a><a href="#help">Keyboard shortcuts</a></div>
+          </footer>
         </div>
       </div>`;
     this.bindShell();
@@ -84,6 +92,7 @@ export class App {
     });
     document.getElementById('theme-toggle')?.addEventListener('click', () => this.toggleTheme());
     document.getElementById('profile-button')?.addEventListener('click', () => location.hash = 'settings');
+    document.getElementById('share-site')?.addEventListener('click', () => this.shareSite());
     document.getElementById('global-search')?.addEventListener('keydown', event => {
       if (event.key === 'Enter') location.hash = `problems?q=${encodeURIComponent(event.currentTarget.value)}`;
     });
@@ -95,6 +104,27 @@ export class App {
     saveProgress(this.progress);
     this.renderShell();
     this.renderRoute();
+  }
+
+  async shareSite() {
+    const url = location.origin + location.pathname;
+    const shareData = {title:"Xavier's Python Challenge", text:'Practice Python completely free.', url};
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else await navigator.clipboard.writeText(url);
+      this.notify(navigator.share ? 'Share menu opened.' : 'Website link copied.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') this.notify('Could not share the website.');
+    }
+  }
+
+  notify(message) {
+    const notification = document.createElement('div');
+    notification.className = 'toast';
+    notification.setAttribute('role','status');
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
   }
 
   async renderRoute() {
@@ -117,6 +147,7 @@ export class App {
       generator: () => this.generator(),
       interview: () => this.interview(),
       debugging: () => this.debugging(),
+      prediction: () => this.prediction(),
       playground: () => this.playground(),
       lessons: () => this.lessons(),
       guided: () => this.guided(),
@@ -126,7 +157,9 @@ export class App {
       history: () => this.history(),
       achievements: () => this.achievements(),
       settings: () => this.settings(),
-      help: () => this.help()
+      help: () => this.help(),
+      about: () => this.about(),
+      privacy: () => this.privacy()
     };
     main.innerHTML = (pages[route] || pages.dashboard)();
     this.refreshIcons();
@@ -143,10 +176,11 @@ export class App {
     const accuracy = this.progress.submissions.length ? Math.round(this.progress.submissions.filter(s => s.accepted).length / this.progress.submissions.length * 100) : 0;
     const level = this.progress.profile.level;
     const current = levels[level - 1];
-    const onboarding = !this.progress.profile.started ? `<section class="card onboarding-card"><div><p class="eyebrow">GET STARTED</p><h2>Personalize your learning</h2><p>Choose an experience level and a primary goal.</p></div><form id="onboarding-form" class="onboarding-form"><label>Name<input name="name" maxlength="40" value="${this.escape(this.progress.profile.name==='Learner'?'':this.progress.profile.name)}" placeholder="Optional display name"></label><label>Experience<select name="experience"><option>Completely new to Python</option><option>Know basic syntax</option><option>Comfortable with basic Python</option><option>Preparing for coding interviews</option></select></label><label>Goal<select name="goal"><option>Learn Python fundamentals</option><option>Improve problem-solving</option><option>Prepare for internship assessments</option><option>Prepare for technical interviews</option></select></label><button class="button primary" type="submit">Start Learning</button></form></section>` : '';
+    const onboarding = !this.progress.profile.started ? `<section class="card onboarding-card"><div><p class="eyebrow">GET STARTED</p><h2>Personalize your learning</h2><p>Choose an experience level and a primary goal. All fields are optional.</p></div><form id="onboarding-form" class="onboarding-form"><label>Name<input name="name" maxlength="40" value="${this.escape(this.progress.profile.name==='Learner'?'':this.progress.profile.name)}" placeholder="Optional display name"></label><label>Experience<select name="experience"><option>Completely new to Python</option><option>Know basic syntax</option><option>Comfortable with basic Python</option><option>Preparing for coding interviews</option></select></label><label>Goal<select name="goal"><option>Learn Python fundamentals</option><option>Improve problem-solving</option><option>Prepare for internship assessments</option><option>Prepare for technical interviews</option></select></label><div class="onboarding-actions"><button class="button primary" type="submit">Start Learning</button><button class="button secondary" type="button" id="skip-onboarding">Skip and Start Practicing</button></div></form></section>` : '';
     return `
       <div class="page dashboard-page">
         ${onboarding}
+        <div class="free-banner">100% free. Learn at your own pace.</div>
         <section class="welcome-row"><div><p class="eyebrow">YOUR PYTHON JOURNEY</p><h1>Welcome back, ${this.escape(this.progress.profile.name)}</h1><p>Keep building toward confident, independent problem solving.</p></div><div class="welcome-actions"><a class="button secondary" href="#problems">Quick Practice</a><a class="button primary" href="#workspace/${current.problems[0].id}">Continue Learning</a></div></section>
         <section class="stats-grid">
           ${this.statCard('CircleCheck','Problems Solved',String(solved),'Start with your next challenge','purple')}
@@ -201,7 +235,10 @@ export class App {
     return `<div class="page"><div class="page-heading"><h1>Mistake Notebook</h1></div>${mistakes.length ? `<div class="mistake-list">${mistakes.slice().reverse().map(m=>`<article class="card mistake-card"><div><span class="difficulty">${m.difficulty}</span><h3>${m.title}</h3><small>${new Date(m.date).toLocaleString()} · ${m.topic}</small></div><p>${m.error || 'Incorrect solution output'}</p><a class="button secondary" href="#workspace/${m.problemId}">Retry Problem</a></article>`).join('')}</div>` : `<article class="card feature-placeholder"><div class="placeholder-icon"><i data-lucide="NotebookTabs"></i></div><h2>No mistakes yet</h2><p>Failed submissions will appear here automatically.</p></article>`}</div>`;
   }
   interview() {
-    return `<div class="page"><div class="page-heading"><div><p class="eyebrow">MOCK ASSESSMENT</p><h1>Interview Practice</h1></div></div><form class="generator card" id="interview-form"><label>Preset<select name="preset"><option>Absolute Beginner Assessment</option><option>PNC-Style Practice</option><option>Entry-Level Internship Assessment</option><option>String and List Assessment</option></select></label><label>Duration<select name="duration"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Questions<select name="questions"><option value="3">3 questions</option><option value="5">5 questions</option><option value="10">10 questions</option></select></label><button class="button primary" type="submit">Start Assessment</button></form></div>`;
+    return `<div class="page"><div class="page-heading"><div><p class="eyebrow">MOCK ASSESSMENT</p><h1>Interview Practice</h1></div></div><form class="generator card" id="interview-form"><label>Preset<select name="preset"><option>Absolute Beginner Assessment</option><option>Entry-Level Assessment Practice</option><option>Entry-Level Internship Assessment</option><option>String and List Assessment</option></select></label><label>Duration<select name="duration"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Questions<select name="questions"><option value="3">3 questions</option><option value="5">5 questions</option><option value="10">10 questions</option></select></label><button class="button primary" type="submit">Start Assessment</button></form></div>`;
+  }
+  prediction() {
+    return `<div class="page"><div class="page-heading"><h1>Code Prediction</h1></div><article class="card prediction-card"><h2>What will this program print?</h2><pre><code>numbers = [2, 4, 6]\nprint(len(numbers))</code></pre><label><span class="sr-only">Expected output</span><input id="prediction-answer" type="text" placeholder="Enter the expected output"></label><button class="button primary" id="check-prediction">Submit Prediction</button><div id="prediction-result" aria-live="polite"></div></article></div>`;
   }
   analytics() { return `<div class="page"><div class="page-heading"><h1>Analytics</h1></div><section class="stats-grid">${this.statCard('Target','Accuracy','0%','No submissions yet','green')}${this.statCard('Timer','Practice Time','0 min','Across this device','blue')}${this.statCard('TrendingUp','Problems Attempted','0','Real submissions only','purple')}</section><article class="card chart-empty"><i data-lucide="ChartNoAxesCombined"></i><h2>Insufficient data</h2><p>Complete coding challenges to generate analytics.</p></article></div>`; }
   history() { return `<div class="page"><div class="page-heading"><h1>Submission History</h1></div>${this.recentSubmissions()}</div>`; }
@@ -221,12 +258,20 @@ export class App {
     return `<div class="page"><div class="page-heading"><h1>Settings</h1></div><div class="settings-layout">
       <article class="card settings-card"><h2>Appearance</h2><label>Theme<select id="setting-theme"><option value="dark" ${this.progress.settings.theme==='dark'?'selected':''}>Dark</option><option value="light" ${this.progress.settings.theme==='light'?'selected':''}>Light</option></select></label><label>Editor font size<input id="setting-font" type="number" min="10" max="24" value="${this.progress.settings.fontSize || 14}"></label></article>
       <article class="card settings-card"><h2>Learning</h2><label>Default coding format<select id="setting-format"><option value="stdin" ${this.progress.settings.defaultFormat==='stdin'?'selected':''}>stdin / stdout</option><option value="function" ${this.progress.settings.defaultFormat==='function'?'selected':''}>Function</option></select></label><label>Daily goal<select><option>1 problem per day</option><option>3 problems per day</option><option>5 problems per day</option></select></label></article>
-      <article class="card settings-card"><h2>Data management</h2><button class="button secondary" id="export-progress">Export Progress</button><button class="button danger" id="reset-progress">Reset Progress</button></article>
-      <article class="card settings-card"><h2>About</h2><p><strong>PyLevel</strong> · Version 1.0.0</p><p>Browser-based Python powered by WebAssembly.</p></article>
+      <article class="card settings-card"><h2>Data management</h2><button class="button secondary" id="export-progress">Export Progress</button><label class="import-progress-label" for="import-progress">Import Progress</label><input id="import-progress" type="file" accept="application/json"><button class="button danger" id="reset-progress">Reset Progress</button></article>
+      <article class="card settings-card"><h2>About</h2><p><strong>Xavier's Python Challenge</strong> · Version 1.0.0</p><p>Completely free. Browser-based Python powered by WebAssembly.</p></article>
     </div></div>`;
   }
 
-  help() { return `<div class="page"><div class="page-heading"><h1>Help and Documentation</h1></div><article class="card prose"><h2>Keyboard shortcuts</h2><p><kbd>Ctrl/Cmd + Enter</kbd> Run code · <kbd>Ctrl/Cmd + S</kbd> Save draft · <kbd>Ctrl/Cmd + F</kbd> Find</p><h2>Python engine</h2><p>PyLevel runs real Python code in a Web Worker. Infinite loops can be stopped with the Stop button. Browser-based execution is not a secure server-side sandbox.</p><h2>Progress</h2><p>Progress is stored locally in this browser. Export a backup regularly.</p></article></div>`; }
+  help() { return `<div class="page"><div class="page-heading"><h1>Help and Documentation</h1></div><article class="card prose"><h2>Keyboard shortcuts</h2><p><kbd>Ctrl/Cmd + Enter</kbd> Run code · <kbd>Ctrl/Cmd + S</kbd> Save draft · <kbd>Ctrl/Cmd + F</kbd> Find</p><h2>Python engine</h2><p>Xavier's Python Challenge runs real Python code in a Web Worker. Infinite loops can be stopped with the Stop button. Browser-based execution is not a hardened security sandbox.</p><h2>Progress</h2><p>Progress is stored locally in this browser. Export and import JSON backups in Settings.</p><h2>Hosting and network</h2><p>The core application is static and needs no backend. Pyodide assets are downloaded from jsDelivr the first time Python runs.</p></article></div>`; }
+
+  about() {
+    return `<div class="page"><div class="page-heading"><h1>About Xavier's Python Challenge</h1></div><article class="card prose"><p>Xavier's Python Challenge is a completely free Python learning and coding practice platform designed to help students, aspiring software engineers, and beginner programmers develop practical problem-solving skills.</p><h2>Our mission</h2><p>Make Python programming and technical interview preparation accessible to everyone, regardless of experience level or financial situation.</p><h2>Completely free</h2><p>All coding challenges, learning levels, practice tools, hints, lessons, and interview preparation features are available without subscriptions, advertisements, or payment requirements.</p><h2>Created by</h2><p><strong>Xavier Chitison</strong></p><h2>Built for</h2><ul><li>Beginner programmers</li><li>College and computer science students</li><li>Aspiring software engineers</li><li>Internship and technical interview candidates</li><li>Anyone improving their Python skills</li></ul></article></div>`;
+  }
+
+  privacy() {
+    return `<div class="page"><div class="page-heading"><h1>Privacy</h1></div><article class="card prose"><p>There is no account system, advertising tracker, or payment collection. Learning progress and coding activity are stored locally in the current browser profile.</p><p>No cloud synchronization is automatic. Use Settings to export or import a JSON backup. Clearing browser data removes local progress.</p><p>Python runs in your browser. The application requests Pyodide assets from jsDelivr when first needed. Browser-hosted hidden tests can be inspected and are not secure competitive-assessment protection.</p></article></div>`;
+  }
 
   placeholder(title, description, icon) {
     return `<div class="page"><div class="page-heading"><h1>${title}</h1></div><article class="card feature-placeholder"><div class="placeholder-icon"><i data-lucide="${icon}"></i></div><h2>${title}</h2><p>${description}</p><a class="button primary" href="#problems">Browse problems</a></article></div>`;
@@ -243,6 +288,22 @@ export class App {
       saveProgress(this.progress);
       this.renderShell();
       this.renderRoute();
+    });
+    document.getElementById('skip-onboarding')?.addEventListener('click', () => {
+      this.progress.profile.started = true;
+      saveProgress(this.progress);
+      this.renderShell();
+      this.renderRoute();
+    });
+    document.getElementById('check-prediction')?.addEventListener('click', () => {
+      const answer = document.getElementById('prediction-answer')?.value.trim();
+      const result = document.getElementById('prediction-result');
+      if (!result) return;
+      if (answer === '3') {
+        result.innerHTML = '<strong class="accepted">Correct.</strong><p><code>len(numbers)</code> returns the number of items in the list.</p>';
+      } else {
+        result.innerHTML = '<strong class="failed">Not quite.</strong><p>Count the number of items in <code>numbers</code>, then try again.</p>';
+      }
     });
     document.getElementById('problem-search')?.addEventListener('input', event => {
       const value = event.currentTarget.value;
@@ -263,8 +324,9 @@ export class App {
       saveProgress(this.progress);
     });
     document.getElementById('reset-progress')?.addEventListener('click', () => {
-      if (confirm('Reset all local PyLevel progress?')) {
+      if (confirm("Reset all local Xavier's Python Challenge progress?")) {
         localStorage.removeItem('pylevel-progress');
+        localStorage.removeItem('xpc-progress');
         location.reload();
       }
     });
@@ -272,8 +334,21 @@ export class App {
       const blob = new Blob([JSON.stringify({version:1,progress:this.progress},null,2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'pylevel-progress.json'; a.click();
+      a.href = url; a.download = 'xpc-progress.json'; a.click();
       URL.revokeObjectURL(url);
+    });
+    document.getElementById('import-progress')?.addEventListener('change', async event => {
+      const file = event.currentTarget.files?.[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        if (parsed.version !== 1 || !parsed.progress || typeof parsed.progress !== 'object') throw new Error('Invalid backup');
+        if (!confirm('Replace your current local progress with this backup?')) return;
+        saveProgress(parsed.progress);
+        location.reload();
+      } catch {
+        alert("The selected file is not a valid Xavier's Python Challenge backup.");
+      }
     });
     document.getElementById('generator-form')?.addEventListener('submit', event => {
       event.preventDefault();
