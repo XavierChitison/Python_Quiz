@@ -4,10 +4,10 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 
 ## Status
 
-- Batch 1 (levels 1–10): in progress; 14 replacements implemented and reference-tested.
+- Batch 1 (levels 1–10): in progress; 19 replacements implemented and reference-tested.
 - Batches 2–10: not started.
 - The original first "Print Hello, World!" problem is preserved for now; it still has only one example and repeated identical tests.
-- 486 problem records, including the preserved first problem, still need review against the full requirements.
+- 481 problem records, including the preserved first problem, still need review against the full requirements.
 - A complete 500-objective development manifest has not yet been created. Cross-curriculum semantic uniqueness remains unverified.
 
 ## Implemented objectives
@@ -30,6 +30,11 @@ All entries below have two explained examples, eight manually specified tests, a
 | level-03-problem-3 | Cube volume | Cube an integer | Pyodide cases passed |
 | level-03-problem-4 | Cuboid surface area | Combine three face-area products | Pyodide cases passed |
 | level-03-problem-5 | Squared distance between points | Calculate coordinate differences and squares | Pyodide cases passed |
+| level-04-problem-1 | Convert hours and minutes to minutes | Multiply and add duration components | Pyodide cases passed |
+| level-04-problem-2 | Convert Celsius to Fahrenheit | Apply a formula and format one decimal | Pyodide cases passed |
+| level-04-problem-3 | Break seconds into hours, minutes, and seconds | Use division and remainders for multiple units | Pyodide cases passed |
+| level-04-problem-4 | Find a clock time after elapsed minutes | Wrap an elapsed duration and format clock fields | Pyodide cases passed |
+| level-04-problem-5 | Calculate average trip speed | Divide and round to two decimals | Pyodide cases passed; rounding independently checked for all valid inputs |
 
 These objectives require only beginner input, output, and arithmetic. Their examples are embedded in the existing description because the current UI displays only the first structured example.
 
@@ -41,11 +46,12 @@ The history is retained in browser storage and backups, but the existing UI has 
 
 ## Verification
 
-- `npm run validate:problems`: 4,000/4,000 current reference executions passed, including 112 for the 14 replacements. This does not independently prove semantic uniqueness.
-- `npm test`: 24 tests passed, including revision migration, audit tests, and independent JavaScript checks of all 112 replacement-case outputs.
-- `npm run test:e2e`: 26 browser tests passed, covering geometry rejection and acceptance, level progression, progress migration, accessibility, and repository-subpath loading.
-- The full duplicate audit still fails on untouched content; it reports 485 records in identical-reference groups and 486 records with fewer than two examples. Normalized AST matches are review candidates, not conclusive semantic duplicates.
+- `npm run validate:problems`: 4,000/4,000 current reference executions passed, including 152 for the 19 replacements. This does not independently prove semantic uniqueness.
+- `npm test`: 24 tests passed, including revision migration, audit tests, and independent JavaScript checks of all 152 replacement-case outputs.
+- Focused browser tests: 3 passed, covering progress migration and rejection and acceptance of revised geometry and conversion challenges. The previous full browser run passed 26 tests before the level 4 changes.
+- The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
+- The full duplicate audit still fails on untouched content; it reports 480 records in identical-reference groups and 481 records with fewer than two examples. No level 4 replacement appears in any reported duplicate group. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Continue Batch 1 with `level-04-problem-1` through `level-10-problem-5`, and resolve the preserved first problem's missing second example. Build the required 500-objective manifest without inventing repetitive placeholder objectives, then complete each batch with independently checked test outputs, semantic review, validation, and local commits. Do not publish until all batches and regression tests pass.
+Continue Batch 1 with `level-05-problem-1` through `level-10-problem-5`, and resolve the preserved first problem's missing second example. Build the required 500-objective manifest without inventing repetitive placeholder objectives, then complete each batch with independently checked test outputs, semantic review, validation, and local commits. Do not publish until all batches and regression tests pass.

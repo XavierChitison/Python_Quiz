@@ -1,6 +1,8 @@
 const starter = 'import sys\n\n# Read the input and write your solution here.\n';
+const singleIntegerStarter = 'number = int(input())\n\n# Calculate and print the result.\n';
+const multipleIntegersStarter = 'numbers = list(map(int, input().split()))\n\n# Calculate and print the result.\n';
 
-function challenge(title, description, inputFormat, outputFormat, constraints, cases, hints, referenceSolution, explanation) {
+function challenge(title, description, inputFormat, outputFormat, constraints, cases, hints, referenceSolution, explanation, starterCode = starter) {
   const examples = cases.slice(0, 2).map(([input, output, explanation]) => ({ input, output, explanation }));
   return {
     title,
@@ -10,7 +12,7 @@ function challenge(title, description, inputFormat, outputFormat, constraints, c
     outputFormat,
     constraints,
     examples,
-    starterCode: { stdin: starter },
+    starterCode: { stdin: starterCode },
     publicTestCases: cases.slice(0, 3).map(([input, output]) => ({ input, output })),
     hiddenTestCases: cases.slice(3).map(([input, output]) => ({ input, output })),
     hints,
@@ -231,5 +233,85 @@ export const beginnerChallenges = {
     ['Consider horizontal and vertical differences separately.', 'Subtract x1 from x2 and y1 from y2.', 'Square each difference.', 'Add the two squares.', 'The problem asks for squared distance, so no square root is needed.'],
     'x1, y1, x2, y2 = map(int, input().split())\ndx = x2 - x1\ndy = y2 - y1\nprint(dx * dx + dy * dy)\n',
     'Compute the horizontal and vertical coordinate differences, square both, and add them.'
+  ),
+  'level-04-problem-1': challenge(
+    'Hours and Minutes to Minutes',
+    'Read a duration expressed as hours and additional minutes. Convert the complete duration to minutes and print the result.',
+    'Two integers h and m on one line: hours followed by additional minutes.',
+    'Print the total number of minutes.',
+    ['0 <= h <= 100.', '0 <= m <= 59.', 'One hour equals 60 minutes.'],
+    [
+      ['2 30\n', '150', 'Two hours are 120 minutes; adding 30 gives 150.'],
+      ['0 5\n', '5', 'With no hours, the total is the 5 additional minutes.'],
+      ['0 0\n', '0'], ['1 0\n', '60'], ['0 59\n', '59'], ['100 59\n', '6059'], ['24 45\n', '1485'], ['13 12\n', '792']
+    ],
+    ['Both parts represent a single duration.', 'Read hours and minutes as two integers.', 'Convert hours to minutes before adding.', 'Multiply hours by 60, then add the minutes.', 'Print only the total, not the original parts.'],
+    'hours, minutes = map(int, input().split())\nprint(hours * 60 + minutes)\n',
+    'Each hour contributes 60 minutes, so the total is hours * 60 + minutes.',
+    multipleIntegersStarter
+  ),
+  'level-04-problem-2': challenge(
+    'Celsius to Fahrenheit',
+    'Read an integer temperature in degrees Celsius. Convert it to Fahrenheit using Fahrenheit = Celsius * 9 / 5 + 32, and print one digit after the decimal point.',
+    'One integer c, the temperature in Celsius.',
+    'Print the Fahrenheit temperature with exactly one decimal place.',
+    ['-100 <= c <= 1000.'],
+    [
+      ['0\n', '32.0', 'Zero Celsius converts to 0 * 9 / 5 + 32 = 32.0 Fahrenheit.'],
+      ['100\n', '212.0', '100 Celsius converts to 100 * 9 / 5 + 32 = 212.0 Fahrenheit.'],
+      ['-40\n', '-40.0'], ['-100\n', '-148.0'], ['37\n', '98.6'], ['1\n', '33.8'], ['-1\n', '30.2'], ['1000\n', '1832.0']
+    ],
+    ['Use the given conversion formula.', 'Read the Celsius temperature as an integer.', 'Multiply by nine, divide by five, then add 32.', 'Use decimal formatting to show one digit after the point.', 'Check a negative Celsius temperature.'],
+    'celsius = int(input())\nfahrenheit = celsius * 9 / 5 + 32\nprint(f\"{fahrenheit:.1f}\")\n',
+    'Apply the conversion formula and format the resulting temperature to one decimal place.',
+    singleIntegerStarter
+  ),
+  'level-04-problem-3': challenge(
+    'Break Seconds into Hours, Minutes, and Seconds',
+    'Read a duration in seconds. Break it into whole hours, remaining whole minutes, and remaining seconds.',
+    'One integer total, the duration in seconds.',
+    'Print the three nonnegative integers hours, minutes, and seconds, separated by spaces.',
+    ['0 <= total <= 359999.', 'Minutes and seconds must each be less than 60.'],
+    [
+      ['3661\n', '1 1 1', '3661 seconds contains one hour, one minute, and one second.'],
+      ['59\n', '0 0 59', '59 seconds is less than a minute, so both hours and minutes are zero.'],
+      ['0\n', '0 0 0'], ['3600\n', '1 0 0'], ['3599\n', '0 59 59'], ['86400\n', '24 0 0'], ['359999\n', '99 59 59'], ['60\n', '0 1 0']
+    ],
+    ['An hour contains 3600 seconds.', 'Use integer division to find complete hours.', 'Remove those hours before finding complete minutes.', 'Use division and remainder to separate the remaining minutes and seconds.', 'Print all three fields, including zeros.'],
+    'total = int(input())\nhours = total // 3600\nremaining = total % 3600\nminutes = remaining // 60\nseconds = remaining % 60\nprint(hours, minutes, seconds)\n',
+    'Divide by 3600 for hours, then split the remaining seconds into minutes and seconds.',
+    singleIntegerStarter
+  ),
+  'level-04-problem-4': challenge(
+    'Clock After an Elapsed Duration',
+    'Given a time on a 24-hour clock and a nonnegative duration in minutes, print the resulting clock time. Wrap around midnight as many times as necessary.',
+    'Three integers h, m, and elapsed on one line: starting hour, starting minute, and elapsed minutes.',
+    'Print the resulting time as HH:MM, with two digits for each field.',
+    ['0 <= h <= 23.', '0 <= m <= 59.', '0 <= elapsed <= 10000.', 'The day contains 1440 minutes.'],
+    [
+      ['0 0 0\n', '00:00', 'No minutes pass after midnight, so the clock remains 00:00.'],
+      ['23 50 20\n', '00:10', 'Twenty minutes after 23:50 is 00:10 on the next day.'],
+      ['12 30 90\n', '14:00'], ['0 0 1440\n', '00:00'], ['1 59 1\n', '02:00'], ['23 59 1\n', '00:00'], ['10 15 2880\n', '10:15'], ['0 0 10000\n', '22:40']
+    ],
+    ['Convert the starting clock time to minutes since midnight.', 'Add the elapsed minutes.', 'Use the remainder after division by 1440 to wrap into one day.', 'Split the result into hours and minutes.', 'Format each part with two digits.'],
+    'hours, minutes, elapsed = map(int, input().split())\ntotal = (hours * 60 + minutes + elapsed) % 1440\nprint(f\"{total // 60:02d}:{total % 60:02d}\")\n',
+    'Convert the start to minutes, add the elapsed duration, reduce modulo 1440, and format the hour and minute fields.',
+    multipleIntegersStarter
+  ),
+  'level-04-problem-5': challenge(
+    'Average Trip Speed',
+    'Read a distance in kilometers and an elapsed time in hours. Print the average speed in kilometers per hour, rounded to two decimal places. If the exact value is halfway between two hundredths, round to the even hundredth.',
+    'Two integers distance and hours on one line.',
+    'Print distance divided by hours with exactly two decimal places.',
+    ['0 <= distance <= 10000.', '1 <= hours <= 10.'],
+    [
+      ['120 2\n', '60.00', 'Traveling 120 kilometers in 2 hours gives 60.00 kilometers per hour.'],
+      ['7 4\n', '1.75', 'Dividing 7 kilometers by 4 hours gives 1.75 kilometers per hour.'],
+      ['0 1\n', '0.00'], ['1 8\n', '0.12'], ['3 8\n', '0.38'], ['10 3\n', '3.33'], ['10000 10\n', '1000.00'], ['5 2\n', '2.50']
+    ],
+    ['Average speed is total distance divided by elapsed time.', 'Both values are on the same line.', 'Divide distance by hours using /.', 'Format the result to two decimal places.', 'Keep both trailing zeros and use the specified halfway rule.'],
+    'distance, hours = map(int, input().split())\nprint(f\"{distance / hours:.2f}\")\n',
+    'Divide the distance by the positive duration and format the speed with two decimal places. Python rounds exact halfway cases to the even hundredth.',
+    multipleIntegersStarter
   )
 };

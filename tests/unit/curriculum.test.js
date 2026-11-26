@@ -31,7 +31,7 @@ describe("Xavier's Python Challenge curriculum", () => {
   });
   it('gives revised beginner challenges distinct solutions and meaningful examples', () => {
     const revised = problems.filter(problem => problem.contentRevision === 1);
-    expect(revised).toHaveLength(14);
+    expect(revised).toHaveLength(19);
     expect(new Set(revised.map(problem => problem.referenceSolution)).size).toBe(revised.length);
     for (const problem of revised) {
       expect(problem.examples).toHaveLength(2);
@@ -57,7 +57,19 @@ describe("Xavier's Python Challenge curriculum", () => {
       'level-03-problem-2': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return (a * b / 2).toFixed(2); },
       'level-03-problem-3': input => String(Number(input) ** 3),
       'level-03-problem-4': input => { const [a, b, c] = input.trim().split(/\s+/).map(Number); return String(2 * (a * b + a * c + b * c)); },
-      'level-03-problem-5': input => { const [a, b, c, d] = input.trim().split(/\s+/).map(Number); return String((c - a) ** 2 + (d - b) ** 2); }
+      'level-03-problem-5': input => { const [a, b, c, d] = input.trim().split(/\s+/).map(Number); return String((c - a) ** 2 + (d - b) ** 2); },
+      'level-04-problem-1': input => { const [h, m] = input.trim().split(/\s+/).map(Number); return String(h * 60 + m); },
+      'level-04-problem-2': input => ((Number(input) * 18 + 320) / 10).toFixed(1),
+      'level-04-problem-3': input => { const n = Number(input); return `${Math.floor(n / 3600)} ${Math.floor((n % 3600) / 60)} ${n % 60}`; },
+      'level-04-problem-4': input => { const [h, m, elapsed] = input.trim().split(/\s+/).map(Number); const total = (h * 60 + m + elapsed) % 1440; return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`; },
+      'level-04-problem-5': input => {
+        const [distance, hours] = input.trim().split(/\s+/).map(Number);
+        const numerator = distance * 100;
+        const whole = Math.floor(numerator / hours);
+        const remainder = numerator % hours;
+        const cents = whole + Number(2 * remainder > hours || (2 * remainder === hours && whole % 2 === 1));
+        return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
+      }
     };
     for (const problem of problems.filter(item => item.contentRevision === 1)) {
       for (const testCase of [...problem.publicTestCases, ...problem.hiddenTestCases]) {
