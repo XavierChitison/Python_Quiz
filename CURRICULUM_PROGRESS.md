@@ -43,7 +43,7 @@ The history is retained in browser storage and backups, but the existing UI has 
 
 - `npm run validate:problems`: 4,000/4,000 current reference executions passed, including 112 for the 14 replacements. This does not independently prove semantic uniqueness.
 - `npm test`: 24 tests passed, including revision migration, audit tests, and independent JavaScript checks of all 112 replacement-case outputs.
-- `npm run test:e2e`: 25 browser tests passed before the geometry additions. After the additions, three focused browser tests passed, covering geometry rejection and acceptance, level progression, and progress migration.
+- `npm run test:e2e`: 26 browser tests passed, covering geometry rejection and acceptance, level progression, progress migration, accessibility, and repository-subpath loading.
 - The full duplicate audit still fails on untouched content; it reports 485 records in identical-reference groups and 486 records with fewer than two examples. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action

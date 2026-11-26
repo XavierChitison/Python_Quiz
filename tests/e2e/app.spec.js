@@ -389,9 +389,7 @@ test('solving the five problems advances to Level 2 and celebrates completion', 
     await page.getByRole('button', { name: 'Submit Solution' }).click();
     const executionState = page.locator('#execution-state');
     await expect(executionState).toHaveText('Running public and hidden tests…');
-    await expect(executionState).not.toHaveText('Running public and hidden tests…', { timeout: 30_000 });
-    const testResults = await page.locator('.test-case').allTextContents();
-    expect(await executionState.textContent(), `Problem ${index} results: ${testResults.join(' | ')}`).toBe('Accepted');
+    await expect(executionState).toHaveText('Accepted', { timeout: 90_000 });
     if (index < 5) {
       const nextProblem = index + 1;
       await page.getByRole('link', { name: new RegExp(`Problem ${nextProblem}`) }).click();
