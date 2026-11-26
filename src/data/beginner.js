@@ -156,5 +156,80 @@ export const beginnerChallenges = {
     ['The mean is the sum divided by the number of values.', 'Read three integers from the line.', 'Add them and divide by three.', 'Format the result with two decimal places.', 'Keep trailing zeroes in the output.'],
     'a, b, c = map(int, input().split())\nprint(f\"{(a + b + c) / 3:.2f}\")\n',
     'Add the three integers, divide by three, and format the result to two decimal places.'
+  ),
+  'level-03-problem-1': challenge(
+    'Rectangle Area and Perimeter',
+    'Read the length and width of a rectangle. Print both its area and its perimeter, in that order.',
+    'Two nonnegative integers length and width on one line.',
+    'Print area and perimeter separated by one space.',
+    ['0 <= length, width <= 100.', 'Area is length times width; perimeter is twice their sum.'],
+    [
+      ['3 4\n', '12 14', 'A 3 by 4 rectangle has area 12 and perimeter 14.'],
+      ['1 1\n', '1 4', 'A 1 by 1 rectangle has area 1 and perimeter 4.'],
+      ['0 5\n', '0 10'], ['2 7\n', '14 18'], ['10 5\n', '50 30'], ['100 1\n', '100 202'], ['4 4\n', '16 16'], ['9 2\n', '18 22']
+    ],
+    ['Two results are required.', 'Read both dimensions as integers.', 'Multiply the dimensions for area.', 'Add the dimensions and multiply by two for perimeter.', 'Print the area before the perimeter.'],
+    'length, width = map(int, input().split())\nprint(length * width, 2 * (length + width))\n',
+    'Multiply length by width for the area and double their sum for the perimeter.'
+  ),
+  'level-03-problem-2': challenge(
+    'Triangle Area',
+    'Read a triangle base and height. Calculate half their product and print the area with exactly two decimal places.',
+    'Two nonnegative integers base and height on one line.',
+    'Print base times height divided by 2, with two digits after the decimal point.',
+    ['0 <= base, height <= 200.'],
+    [
+      ['4 3\n', '6.00', 'Half of 4 times 3 is 6.00.'],
+      ['5 3\n', '7.50', 'Half of 5 times 3 is 7.50.'],
+      ['0 8\n', '0.00'], ['1 1\n', '0.50'], ['2 7\n', '7.00'], ['10 10\n', '50.00'], ['200 200\n', '20000.00'], ['9 5\n', '22.50']
+    ],
+    ['The area is half the product of base and height.', 'Read the two dimensions from one line.', 'Multiply them and divide by two.', 'Format the result to two decimal places.', 'Keep the trailing zero when the area is a whole number.'],
+    'base, height = map(int, input().split())\nprint(f\"{base * height / 2:.2f}\")\n',
+    'A triangle has half the area of a rectangle with the same base and height.'
+  ),
+  'level-03-problem-3': challenge(
+    'Cube Volume',
+    'Read the side length of a cube and print its volume. The volume is the side length multiplied by itself three times.',
+    'One nonnegative integer side length.',
+    'Print the integer volume.',
+    ['0 <= side <= 100.'],
+    [
+      ['1\n', '1', 'A cube with side 1 has volume 1 times 1 times 1, or 1.'],
+      ['3\n', '27', 'A cube with side 3 has volume 3 times 3 times 3, or 27.'],
+      ['0\n', '0'], ['2\n', '8'], ['4\n', '64'], ['5\n', '125'], ['10\n', '1000'], ['100\n', '1000000']
+    ],
+    ['All three dimensions of a cube are equal.', 'Read the side length as an integer.', 'Multiply the side length three times.', 'You can also use the ** operator.', 'A zero-length side gives zero volume.'],
+    'side = int(input())\nprint(side ** 3)\n',
+    'The volume is side cubed, which Python computes with side ** 3.'
+  ),
+  'level-03-problem-4': challenge(
+    'Cuboid Surface Area',
+    'Read the length, width, and height of a rectangular box. Print its total surface area: twice the sum of length times width, length times height, and width times height.',
+    'Three positive integers length, width, and height on one line.',
+    'Print the surface area as an integer.',
+    ['1 <= length, width, height <= 100.'],
+    [
+      ['2 3 4\n', '52', 'The three face areas are 6, 8, and 12; twice their sum is 52.'],
+      ['1 1 1\n', '6', 'A unit cube has six faces of area 1, so its surface area is 6.'],
+      ['1 2 3\n', '22'], ['4 4 4\n', '96'], ['1 1 2\n', '10'], ['10 10 1\n', '240'], ['2 5 8\n', '132'], ['100 1 1\n', '402']
+    ],
+    ['Opposite faces have equal area.', 'There are three different pairs of faces.', 'Multiply each pair of dimensions.', 'Add those products and double the sum.', 'Print one integer.'],
+    'length, width, height = map(int, input().split())\nprint(2 * (length * width + length * height + width * height))\n',
+    'Each of the three distinct face areas occurs twice, giving 2 * (length * width + length * height + width * height).'
+  ),
+  'level-03-problem-5': challenge(
+    'Squared Distance Between Points',
+    'Read the coordinates of two points. Print the squared distance between them: the square of the horizontal difference plus the square of the vertical difference. Do not take a square root.',
+    'Four integers x1, y1, x2, y2 on one line.',
+    'Print (x2 - x1) squared plus (y2 - y1) squared.',
+    ['-100 <= each coordinate <= 100.'],
+    [
+      ['0 0 3 4\n', '25', 'The differences are 3 and 4; their squares add to 9 + 16 = 25.'],
+      ['-2 5 -2 5\n', '0', 'The points are identical, so both differences are zero.'],
+      ['1 1 2 3\n', '5'], ['-1 -1 1 2\n', '13'], ['5 0 0 0\n', '25'], ['0 0 0 7\n', '49'], ['100 -100 -100 100\n', '80000'], ['-3 4 0 0\n', '25']
+    ],
+    ['Consider horizontal and vertical differences separately.', 'Subtract x1 from x2 and y1 from y2.', 'Square each difference.', 'Add the two squares.', 'The problem asks for squared distance, so no square root is needed.'],
+    'x1, y1, x2, y2 = map(int, input().split())\ndx = x2 - x1\ndy = y2 - y1\nprint(dx * dx + dy * dy)\n',
+    'Compute the horizontal and vertical coordinate differences, square both, and add them.'
   )
 };

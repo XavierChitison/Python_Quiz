@@ -31,7 +31,7 @@ describe("Xavier's Python Challenge curriculum", () => {
   });
   it('gives revised beginner challenges distinct solutions and meaningful examples', () => {
     const revised = problems.filter(problem => problem.contentRevision === 1);
-    expect(revised).toHaveLength(9);
+    expect(revised).toHaveLength(14);
     expect(new Set(revised.map(problem => problem.referenceSolution)).size).toBe(revised.length);
     for (const problem of revised) {
       expect(problem.examples).toHaveLength(2);
@@ -52,7 +52,12 @@ describe("Xavier's Python Challenge curriculum", () => {
       'level-02-problem-2': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return String(a * b); },
       'level-02-problem-3': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return String(Math.floor(a / b)); },
       'level-02-problem-4': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return String(a % b); },
-      'level-02-problem-5': input => (input.trim().split(/\s+/).map(Number).reduce((a, b) => a + b) / 3).toFixed(2)
+      'level-02-problem-5': input => (input.trim().split(/\s+/).map(Number).reduce((a, b) => a + b) / 3).toFixed(2),
+      'level-03-problem-1': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return `${a * b} ${2 * (a + b)}`; },
+      'level-03-problem-2': input => { const [a, b] = input.trim().split(/\s+/).map(Number); return (a * b / 2).toFixed(2); },
+      'level-03-problem-3': input => String(Number(input) ** 3),
+      'level-03-problem-4': input => { const [a, b, c] = input.trim().split(/\s+/).map(Number); return String(2 * (a * b + a * c + b * c)); },
+      'level-03-problem-5': input => { const [a, b, c, d] = input.trim().split(/\s+/).map(Number); return String((c - a) ** 2 + (d - b) ** 2); }
     };
     for (const problem of problems.filter(item => item.contentRevision === 1)) {
       for (const testCase of [...problem.publicTestCases, ...problem.hiddenTestCases]) {
