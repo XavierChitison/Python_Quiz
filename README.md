@@ -29,9 +29,12 @@ npm test
 npm run test:e2e
 npm run test:accessibility
 npm run validate:problems
+node scripts/audit-curriculum.js
 ```
 
 `npm run serve:test` starts the small static test server used by Playwright. It can also serve the app under `/repo/` to verify repository subpaths. There is intentionally no Vite build or development-server requirement.
+
+The curriculum audit reports repeated descriptions, solutions, and test collections, plus AST similarity candidates for manual review. It currently exits with a failure because the existing curriculum contains duplicate solutions and lacks second examples. Passing reference executions alone do not establish that problems have distinct objectives.
 
 ## Python execution and privacy
 
