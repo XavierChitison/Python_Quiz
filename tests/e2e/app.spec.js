@@ -175,6 +175,26 @@ test('a revised shopping challenge rejects rounding down and accepts the correct
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-05-problem-5'])).toBe(1);
 });
 
+test('a revised digit challenge checks leading zeros when reversing', async ({ page }) => {
+  await page.addInitScript(() => {
+    const solved = Array.from({ length: 3 }, (_, index) => `level-06-problem-${index + 1}`);
+    localStorage.setItem('xpc-progress', JSON.stringify({
+      profile: { level: 6 },
+      solved,
+      solvedRevisions: Object.fromEntries(solved.map(id => [id, 1]))
+    }));
+  });
+  await page.goto('/#/problems/level-06-problem-4');
+  await expect(page.getByRole('heading', { name: 'Reverse a Two-Digit Number' })).toBeVisible();
+  await setEditorValue(page, 'print(input()[::-1])');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Wrong Answer', { timeout: 90000 });
+  await setEditorValue(page, 'number = int(input())\nprint(number % 10 * 10 + number // 10)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Accepted', { timeout: 90000 });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-06-problem-4'])).toBe(1);
+});
+
 test('All Levels exposes the curriculum and preserves level selection', async ({ page }) => {
   await page.goto('/#/levels');
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();

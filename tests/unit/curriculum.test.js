@@ -31,7 +31,7 @@ describe("Xavier's Python Challenge curriculum", () => {
   });
   it('gives revised beginner challenges distinct solutions and meaningful examples', () => {
     const revised = problems.filter(problem => problem.contentRevision === 1);
-    expect(revised).toHaveLength(24);
+    expect(revised).toHaveLength(29);
     expect(new Set(revised.map(problem => problem.referenceSolution)).size).toBe(revised.length);
     for (const problem of revised) {
       expect(problem.examples).toHaveLength(2);
@@ -74,7 +74,12 @@ describe("Xavier's Python Challenge curriculum", () => {
       'level-05-problem-2': input => { const [price1, quantity1, price2, quantity2] = input.trim().split(/\s+/).map(Number); return String(price1 * quantity1 + price2 * quantity2); },
       'level-05-problem-3': input => { const [principal, rate, years] = input.trim().split(/\s+/).map(Number); return String(Math.round(principal * (rate / 100) * years * 100)); },
       'level-05-problem-4': input => { const [bill, tip, diners] = input.trim().split(/\s+/).map(Number); const total = bill + tip; return `${Math.floor(total / diners)} ${total % diners}`; },
-      'level-05-problem-5': input => { const [people, perPerson, perPizza] = input.trim().split(/\s+/).map(Number); return String(Math.ceil(people * perPerson / perPizza)); }
+      'level-05-problem-5': input => { const [people, perPerson, perPizza] = input.trim().split(/\s+/).map(Number); return String(Math.ceil(people * perPerson / perPizza)); },
+      'level-06-problem-1': input => input.trim().slice(-1),
+      'level-06-problem-2': input => String(Number(input.trim().slice(0, -1)) || 0),
+      'level-06-problem-3': input => String([...input.trim()].reduce((sum, digit) => sum + Number(digit), 0)),
+      'level-06-problem-4': input => String(Number([...input.trim()].reverse().join(''))),
+      'level-06-problem-5': input => input.trim().padStart(2, '0').slice(-2, -1)
     };
     for (const problem of problems.filter(item => item.contentRevision === 1)) {
       for (const testCase of [...problem.publicTestCases, ...problem.hiddenTestCases]) {

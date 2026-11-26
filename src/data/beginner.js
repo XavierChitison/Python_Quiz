@@ -395,5 +395,85 @@ export const beginnerChallenges = {
     'people, slices_per_person, slices_per_pizza = map(int, input().split())\nslices = people * slices_per_person\nprint((slices + slices_per_pizza - 1) // slices_per_pizza)\n',
     'Calculate the required slices, then use ceiling integer division to count whole pizzas, including any partially needed pizza.',
     multipleIntegersStarter
+  ),
+  'level-06-problem-1': challenge(
+    'Find the Last Digit',
+    'Read a nonnegative integer and print its last decimal digit.',
+    'One integer n.',
+    'Print the last digit of n as an integer.',
+    ['0 <= n <= 99999.'],
+    [
+      ['1234\n', '4', 'The rightmost digit of 1234 is 4.'],
+      ['50\n', '0', 'The rightmost digit of 50 is 0.'],
+      ['0\n', '0'], ['9\n', '9'], ['1\n', '1'], ['10\n', '0'], ['99999\n', '9'], ['10101\n', '1']
+    ],
+    ['The last digit is in the ones place.', 'Dividing by 10 leaves the last digit as a remainder.', 'Use the % operator.', 'Print n % 10.', 'Zero is also a valid input.'],
+    'number = int(input())\nprint(number % 10)\n',
+    'The remainder after division by 10 is the ones digit.',
+    singleIntegerStarter
+  ),
+  'level-06-problem-2': challenge(
+    'Remove the Last Digit',
+    'Read a nonnegative integer, remove its last decimal digit, and print the remaining number. If the input has only one digit, print 0.',
+    'One integer n.',
+    'Print the integer that remains after removing the last digit, or 0 for a single-digit input.',
+    ['0 <= n <= 99999.'],
+    [
+      ['1234\n', '123', 'Removing the final 4 leaves 123.'],
+      ['9\n', '0', 'Removing the only digit leaves no digits, so print 0.'],
+      ['0\n', '0'], ['10\n', '1'], ['100\n', '10'], ['99999\n', '9999'], ['10001\n', '1000'], ['99\n', '9']
+    ],
+    ['Removing the ones digit shifts the other digits one place right.', 'Use integer division by 10.', 'The // operator discards the fractional part for nonnegative integers.', 'A single-digit number divided by 10 gives zero.', 'Print n // 10.'],
+    'number = int(input())\nprint(number // 10)\n',
+    'Integer division by 10 removes the ones digit; single-digit inputs produce zero.',
+    singleIntegerStarter
+  ),
+  'level-06-problem-3': challenge(
+    'Sum the Digits of a Two-Digit Number',
+    'Read a two-digit positive integer and print the sum of its tens digit and its ones digit.',
+    'One integer n.',
+    'Print the sum of the two decimal digits.',
+    ['10 <= n <= 99.'],
+    [
+      ['47\n', '11', 'The tens digit is 4 and the ones digit is 7, so their sum is 11.'],
+      ['99\n', '18', 'The digits are 9 and 9, which add to 18.'],
+      ['10\n', '1'], ['11\n', '2'], ['20\n', '2'], ['90\n', '9'], ['55\n', '10'], ['38\n', '11']
+    ],
+    ['A two-digit number has a tens digit and a ones digit.', 'Use // 10 to obtain the tens digit.', 'Use % 10 to obtain the ones digit.', 'Add the two digits.', 'A zero ones digit still contributes to the sum.'],
+    'number = int(input())\nprint(number // 10 + number % 10)\n',
+    'Integer division by 10 finds the tens digit and remainder by 10 finds the ones digit; add them.',
+    singleIntegerStarter
+  ),
+  'level-06-problem-4': challenge(
+    'Reverse a Two-Digit Number',
+    'Read a two-digit positive integer and reverse its decimal digits. Print the result as an integer, so a leading zero is not printed.',
+    'One integer n.',
+    'Print the integer formed by the original ones digit followed by the original tens digit.',
+    ['10 <= n <= 99.', 'For example, reversing 30 produces the integer 3, not 03.'],
+    [
+      ['42\n', '24', 'The original ones digit 2 becomes the tens digit, and 4 becomes the ones digit.'],
+      ['30\n', '3', 'Reversing 30 gives 03, which is printed as the integer 3.'],
+      ['10\n', '1'], ['11\n', '11'], ['99\n', '99'], ['90\n', '9'], ['58\n', '85'], ['67\n', '76']
+    ],
+    ['Find the tens digit and ones digit separately.', 'Use // 10 for the tens digit and % 10 for the ones digit.', 'After reversal, the original ones digit belongs in the tens place.', 'Multiply the original ones digit by 10 and add the original tens digit.', 'Printing an integer naturally omits a leading zero.'],
+    'number = int(input())\ntens = number // 10\nones = number % 10\nprint(ones * 10 + tens)\n',
+    'Swap the digit positions by multiplying the original ones digit by 10 and adding the original tens digit.',
+    singleIntegerStarter
+  ),
+  'level-06-problem-5': challenge(
+    'Find the Tens Digit',
+    'Read a nonnegative integer and print its tens digit. A single-digit number has a tens digit of zero.',
+    'One integer n.',
+    'Print the digit in the tens place as an integer.',
+    ['0 <= n <= 99999.'],
+    [
+      ['123\n', '2', 'In 123, the digit in the tens place is 2.'],
+      ['8\n', '0', 'There is no tens digit in 8, so its tens digit is treated as 0.'],
+      ['0\n', '0'], ['10\n', '1'], ['99999\n', '9'], ['10200\n', '0'], ['1009\n', '0'], ['8075\n', '7']
+    ],
+    ['The tens digit is immediately to the left of the ones digit.', 'Remove the ones digit using integer division by 10.', 'The digit you need is now in the ones place.', 'Use % 10 to keep just that digit.', 'For a single-digit input, the result is zero.'],
+    'number = int(input())\nprint((number // 10) % 10)\n',
+    'Remove the ones digit with // 10, then take % 10 to isolate the original tens digit.',
+    singleIntegerStarter
   )
 };

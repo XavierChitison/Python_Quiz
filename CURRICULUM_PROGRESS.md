@@ -4,10 +4,10 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 
 ## Status
 
-- Batch 1 (levels 1–10): in progress; 24 replacements implemented and reference-tested.
+- Batch 1 (levels 1–10): in progress; 29 replacements implemented and reference-tested.
 - Batches 2–10: not started.
 - The original first "Print Hello, World!" problem is preserved for now; it still has only one example and repeated identical tests.
-- 476 problem records, including the preserved first problem, still need review against the full requirements.
+- 471 problem records, including the preserved first problem, still need review against the full requirements.
 - A complete 500-objective development manifest has not yet been created. Cross-curriculum semantic uniqueness remains unverified.
 
 ## Implemented objectives
@@ -40,6 +40,11 @@ All entries below have two explained examples, eight manually specified tests, a
 | level-05-problem-3 | Calculate simple interest | Apply principal, rate, and years without compounding | Pyodide cases passed |
 | level-05-problem-4 | Split a bill and tip | Add amounts, then divide into shares and remainder | Pyodide cases passed |
 | level-05-problem-5 | Find pizzas needed for a group | Calculate demand and use ceiling integer division | Pyodide cases passed |
+| level-06-problem-1 | Find the last digit | Isolate the ones digit with modulo | Pyodide cases passed |
+| level-06-problem-2 | Remove the last digit | Drop the ones digit using integer division | Pyodide cases passed |
+| level-06-problem-3 | Sum the digits of a two-digit number | Extract and add both digits | Pyodide cases passed |
+| level-06-problem-4 | Reverse a two-digit number | Exchange place values and handle leading zeros | Pyodide cases passed |
+| level-06-problem-5 | Find the tens digit | Shift and isolate a decimal digit | Pyodide cases passed |
 
 These objectives require only beginner input, output, and arithmetic. Both examples' inputs, outputs, and explanations are embedded in the existing description because the current UI displays only the first structured example.
 
@@ -51,13 +56,13 @@ The history is retained in browser storage and backups, but the existing UI has 
 
 ## Verification
 
-- `npm run validate:problems`: 4,000/4,000 current reference executions passed, including 192 for the 24 replacements. This does not independently prove semantic uniqueness.
-- `npm test`: 24 tests passed, including revision migration, audit tests, and independent JavaScript checks of all 192 replacement-case outputs.
-- Full browser regression: 28 tests passed before the example-description adjustment. A focused browser check was rerun afterward for the displayed second example and progress migration.
-- Representative incorrect solutions for all 10 level 4 and 5 problems were rejected by their cases in Pyodide.
+- `npm run validate:problems`: 4,000/4,000 current reference executions passed, including 232 for the 29 replacements. This does not independently prove semantic uniqueness.
+- `npm test`: 24 tests passed, including revision migration, audit tests, and independent JavaScript checks of all 232 replacement-case outputs.
+- Full browser regression: 28 tests passed before the example-description adjustment and level 6 changes. Focused browser checks passed afterward for the displayed second example, progress migration, and reversal of digits with leading zeros.
+- Representative incorrect solutions for all 15 level 4, 5, and 6 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
-- The full duplicate audit still fails on untouched content; it reports 475 records in identical-reference groups and 476 records with fewer than two examples. No level 4 or 5 replacement appears in any reported duplicate group. Normalized AST matches are review candidates, not conclusive semantic duplicates.
+- The full duplicate audit still fails on untouched content; it reports 470 records in identical-reference groups and 471 records with fewer than two examples. No level 4, 5, or 6 replacement appears in any reported duplicate group. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Continue Batch 1 with `level-06-problem-1` through `level-10-problem-5`, and resolve the preserved first problem's missing second example. Build the required 500-objective manifest without inventing repetitive placeholder objectives, then complete each batch with independently checked test outputs, semantic review, validation, and local commits. Do not publish until all batches and regression tests pass.
+Continue Batch 1 with `level-07-problem-1` through `level-10-problem-5`, and resolve the preserved first problem's missing second example. Build the required 500-objective manifest without inventing repetitive placeholder objectives, then complete each batch with independently checked test outputs, semantic review, validation, and local commits. Do not publish until all batches and regression tests pass.
