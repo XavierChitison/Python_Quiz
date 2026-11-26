@@ -302,7 +302,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 @media (max-width: 620px) {
   .topbar { position: static; padding: max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left)); }
-  .brand-name { font-size: 12px; }
+  .brand { min-width: 0; max-width: 100%; }
+  .brand-name { min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
   .brand img { width: 31px; height: 31px; }
   .top-status .status-chip:first-child { display: none; }
   .primary-nav { justify-content: flex-start; flex-wrap: wrap; overflow: visible; }
