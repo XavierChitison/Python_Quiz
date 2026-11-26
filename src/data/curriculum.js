@@ -1,6 +1,8 @@
 import { beginnerChallenges } from './beginner.js';
 import { beginner0708Challenges } from './beginner-07-08.js';
 import { beginner0910Challenges } from './beginner-09-10.js';
+import { conditions1115Challenges } from './conditions-11-15.js';
+import { conditions1620Challenges } from './conditions-16-20.js';
 
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
@@ -17,7 +19,7 @@ export const stageNames = [
 
 export const levelTopics = [
   'Printing values','Reading integer input','Geometry calculations','Unit conversions','Everyday calculations','Working with digits','Mathematical expressions','Basic string operations','String transformations','Combining fundamentals',
-  'Equality comparisons','Greater-than comparisons','Less-than comparisons','Even and odd','Positive and negative','Larger of two','Smaller of two','Multiple conditions','Boolean operators','Conditions review',
+  'Comparisons and decisions','Boolean comparisons','Ordering and triangles','Thresholds and equations','Character and text decisions','Coordinate conditions','Dates and time intervals','Boolean expressions','Conditional calculations','Conditions review',
   'For loops','range()','Counting iterations','Summing numbers','Counting evens','Counting odds','Multiplication tables','While loops','Break and continue','Loops review',
   'String length','Character indexing','String slicing','Uppercase and lowercase','Counting characters','Counting vowels','Counting consonants','Reversing strings','Palindromes','String review',
   'Creating lists','List indexing','Summing lists','List averages','Finding maximum','Finding minimum','Searching targets','Counting occurrences','Second largest','List review',
@@ -101,7 +103,8 @@ function makeProblem(level, index) {
     xpReward: level <= 10 ? 10 : level <= 30 ? 15 : level <= 50 ? 25 : level <= 70 ? 40 : 60,
     estimatedMinutes: level <= 30 ? 5 : level <= 70 ? 10 : 15
   };
-  const replacement = beginnerChallenges[id] || beginner0708Challenges[id] || beginner0910Challenges[id];
+  const replacement = beginnerChallenges[id] || beginner0708Challenges[id] || beginner0910Challenges[id] ||
+    conditions1115Challenges[id] || conditions1620Challenges[id];
   if (replacement) Object.assign(problem, replacement);
   return problem;
 }

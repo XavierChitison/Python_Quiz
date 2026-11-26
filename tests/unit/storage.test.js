@@ -31,13 +31,16 @@ describe('browser progress storage', () => {
   it('rejects invalid backups and ignores removed-feature fields during restoration', () => {
     expect(() => validateBackup({ version: 2, progress: {} })).toThrow(/version 1/);
     expect(() => validateBackup({ version: 1, progress: {} })).toThrow(/recognized progress data/);
+    const currentLevel = problems.filter(problem => problem.level === 1);
+    const currentIds = currentLevel.map(problem => problem.id);
     const restored = validateBackup({
       version: 1,
       progress: {
         profile: { level: 10, xp: 25, streak: 3 },
         settings: { fontSize: 16, autoRun: false, editorTheme: 'light', removedFeature: true },
-        solved: ['known', 'known'],
-        completedLevels: [20, 21, 20],
+        solved: ['known', 'known', ...currentIds, 'level-20-problem-1'],
+        solvedRevisions: Object.fromEntries(currentLevel.map(problem => [problem.id, problem.contentRevision])),
+        completedLevels: [1, 20, 1],
         dashboard: { inventedXp: 500 }
       }
     });
@@ -46,8 +49,10 @@ describe('browser progress storage', () => {
     expect(restored.settings).toMatchObject({ fontSize: 16, autoRun: false, editorTheme: 'light' });
     expect(restored.settings.removedFeature).toBeUndefined();
     expect(restored.dashboard).toBeUndefined();
-    expect(restored.solved).toEqual(['known']);
-    expect(restored.completedLevels).toEqual([20, 21]);
+    expect(restored.solved).toEqual(['known', ...currentIds]);
+    expect(restored.historicalSolved).toEqual(['level-20-problem-1']);
+    expect(restored.completedLevels).toEqual([1]);
+    expect(restored.historicalCompletedLevels).toEqual([20]);
     expect(() => validateBackup({
       version: 1,
       progress: { completedLevels: [101] }
