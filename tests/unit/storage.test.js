@@ -38,9 +38,9 @@ describe('browser progress storage', () => {
       progress: {
         profile: { level: 10, xp: 25, streak: 3 },
         settings: { fontSize: 16, autoRun: false, editorTheme: 'light', removedFeature: true },
-        solved: ['known', 'known', ...currentIds, 'level-20-problem-1', 'level-30-problem-5'],
+        solved: ['known', 'known', ...currentIds, 'level-20-problem-1', 'level-30-problem-5', 'level-40-problem-1'],
         solvedRevisions: Object.fromEntries(currentLevel.map(problem => [problem.id, problem.contentRevision])),
-        completedLevels: [1, 20, 30, 1],
+        completedLevels: [1, 20, 30, 40, 1],
         dashboard: { inventedXp: 500 }
       }
     });
@@ -50,9 +50,9 @@ describe('browser progress storage', () => {
     expect(restored.settings.removedFeature).toBeUndefined();
     expect(restored.dashboard).toBeUndefined();
     expect(restored.solved).toEqual(['known', ...currentIds]);
-    expect(restored.historicalSolved).toEqual(['level-20-problem-1', 'level-30-problem-5']);
+    expect(restored.historicalSolved).toEqual(['level-20-problem-1', 'level-30-problem-5', 'level-40-problem-1']);
     expect(restored.completedLevels).toEqual([1]);
-    expect(restored.historicalCompletedLevels).toEqual([20, 30]);
+    expect(restored.historicalCompletedLevels).toEqual([20, 30, 40]);
     expect(() => validateBackup({
       version: 1,
       progress: { completedLevels: [101] }
