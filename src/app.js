@@ -418,6 +418,7 @@ export class App {
     const date = localDateKey();
     this.progress.daily.date = date;
     this.progress.daily.problemId = problem?.id || '';
+    this.progress.daily.contentRevision = problem?.contentRevision || 0;
     this.save();
     const completed = this.progress.daily.completedDates.includes(date);
     const rewardClaimed = this.progress.daily.rewardedDates.includes(date);
@@ -786,6 +787,8 @@ export class App {
       const assessment = this.progress.activeAssessment;
       assessment.answers[problem.id] = accepted;
       assessment.submissions[problem.id] = code;
+      assessment.questionRevisions = assessment.questionRevisions || {};
+      assessment.questionRevisions[problem.id] = problem.contentRevision || 0;
       this.save();
       this.render();
       playSound(accepted ? 'success' : 'failure', this.progress.settings);

@@ -1,11 +1,18 @@
+import { problems } from '../data/curriculum.js?v=2.0.0';
+
 const STORAGE_KEY = 'xpc-progress';
 const LEGACY_PROGRESS_KEY = 'pylevel-progress';
+const problemRevisions = new Map(problems.map(problem => [problem.id, problem.contentRevision || 0]));
+const revisedLevels = new Set(problems.filter(problem => problem.contentRevision).map(problem => problem.level));
 
 export function createDefaultProgress() {
   return {
     profile: { level: 1, xp: 0, streak: 0, lastPracticeDate: '' },
     solved: [],
+    solvedRevisions: {},
+    historicalSolved: [],
     completedLevels: [],
+    historicalCompletedLevels: [],
     submissions: [],
     settings: {
       musicEnabled: false,
@@ -27,7 +34,7 @@ export function createDefaultProgress() {
       autoSave: true,
       editorTheme: 'dark'
     },
-    daily: { date: '', problemId: '', completedDates: [], rewardedDates: [] },
+    daily: { date: '', problemId: '', completedDates: [], rewardedDates: [], contentRevision: 0, historicalCompletedDates: [] },
     activeAssessment: null,
     interviewResults: [],
     lastProblemId: ''
@@ -57,7 +64,7 @@ export function normalizeProgress(value) {
   if (!isRecord(value)) throw new TypeError('Progress must be a JSON object.');
   const defaults = createDefaultProgress();
   const progress = { ...defaults };
-  for (const key of ['profile', 'solved', 'completedLevels', 'submissions', 'settings', 'daily', 'activeAssessment', 'interviewResults', 'lastProblemId']) {
+  for (const key of ['profile', 'solved', 'solvedRevisions', 'historicalSolved', 'completedLevels', 'historicalCompletedLevels', 'submissions', 'settings', 'daily', 'activeAssessment', 'interviewResults', 'lastProblemId']) {
     if (Object.prototype.hasOwnProperty.call(value, key)) progress[key] = value[key];
   }
   progress.profile = pickKnownFields(defaults.profile, value.profile);
@@ -80,9 +87,35 @@ export function normalizeProgress(value) {
   progress.solved = Array.isArray(value.solved)
     ? [...new Set(value.solved.filter(id => typeof id === 'string' && id.length <= 120))]
     : [];
+  progress.solvedRevisions = isRecord(value.solvedRevisions)
+    ? Object.fromEntries(Object.entries(value.solvedRevisions).filter(([id, revision]) =>
+      id.length <= 120 && Number.isInteger(revision) && revision >= 0))
+    : {};
+  progress.historicalSolved = Array.isArray(value.historicalSolved)
+    ? [...new Set(value.historicalSolved.filter(id => typeof id === 'string' && id.length <= 120))]
+    : [];
+  for (const id of progress.solved) {
+    if ((progress.solvedRevisions[id] || 0) !== (problemRevisions.get(id) || 0)) {
+      progress.historicalSolved.push(id);
+    }
+  }
+  progress.historicalSolved = [...new Set(progress.historicalSolved)];
+  progress.solved = progress.solved.filter(id =>
+    (progress.solvedRevisions[id] || 0) === (problemRevisions.get(id) || 0));
   progress.completedLevels = Array.isArray(value.completedLevels)
     ? [...new Set(value.completedLevels.map(Number).filter(level => Number.isInteger(level) && level >= 1 && level <= 100))]
     : [];
+  progress.historicalCompletedLevels = Array.isArray(value.historicalCompletedLevels)
+    ? [...new Set(value.historicalCompletedLevels.filter(level => Number.isInteger(level) && level >= 1 && level <= 100))]
+    : [];
+  for (const level of progress.completedLevels) {
+    if (revisedLevels.has(level) && problems.some(problem => problem.level === level && !progress.solved.includes(problem.id))) {
+      progress.historicalCompletedLevels.push(level);
+    }
+  }
+  progress.historicalCompletedLevels = [...new Set(progress.historicalCompletedLevels)];
+  progress.completedLevels = progress.completedLevels.filter(level => !revisedLevels.has(level) ||
+    problems.filter(problem => problem.level === level).every(problem => progress.solved.includes(problem.id)));
   for (const key of ['submissions', 'interviewResults']) {
     progress[key] = Array.isArray(value[key]) ? value[key].slice(-200) : [];
   }
@@ -94,6 +127,15 @@ export function normalizeProgress(value) {
   progress.daily.problemId = progress.daily.problemId.slice(0, 120);
   progress.daily.completedDates = validDateList(progress.daily.completedDates);
   progress.daily.rewardedDates = validDateList(progress.daily.rewardedDates);
+  progress.daily.historicalCompletedDates = validDateList(progress.daily.historicalCompletedDates);
+  progress.daily.contentRevision = Number.isInteger(progress.daily.contentRevision) && progress.daily.contentRevision >= 0
+    ? progress.daily.contentRevision : 0;
+  const dailyRevision = problemRevisions.get(progress.daily.problemId) || 0;
+  if (progress.daily.contentRevision !== dailyRevision && progress.daily.completedDates.includes(progress.daily.date)) {
+    progress.daily.historicalCompletedDates = [...new Set([...progress.daily.historicalCompletedDates, progress.daily.date])];
+    progress.daily.completedDates = progress.daily.completedDates.filter(date => date !== progress.daily.date);
+  }
+  progress.daily.contentRevision = dailyRevision;
 
   const assessment = value.activeAssessment;
   if (isRecord(assessment) &&
@@ -113,8 +155,24 @@ export function normalizeProgress(value) {
       endsAt: Number(assessment.endsAt),
       currentIndex: Math.min(assessment.questionIds.length - 1, Math.max(0, Math.floor(Number(assessment.currentIndex) || 0))),
       answers: Object.fromEntries(Object.entries(assessment.answers).filter(([id, answer]) => assessment.questionIds.includes(id) && typeof answer === 'boolean')),
-      submissions: Object.fromEntries(Object.entries(assessment.submissions).filter(([id, code]) => assessment.questionIds.includes(id) && typeof code === 'string' && code.length <= 50000))
+      submissions: Object.fromEntries(Object.entries(assessment.submissions).filter(([id, code]) => assessment.questionIds.includes(id) && typeof code === 'string' && code.length <= 50000)),
+      questionRevisions: isRecord(assessment.questionRevisions) ? { ...assessment.questionRevisions } : {},
+      historicalAnswers: isRecord(assessment.historicalAnswers) ? { ...assessment.historicalAnswers } : {},
+      historicalSubmissions: isRecord(assessment.historicalSubmissions) ? { ...assessment.historicalSubmissions } : {}
     };
+    for (const id of progress.activeAssessment.questionIds) {
+      const currentRevision = problemRevisions.get(id) || 0;
+      if ((progress.activeAssessment.questionRevisions[id] || 0) !== currentRevision) {
+        if (Object.prototype.hasOwnProperty.call(progress.activeAssessment.answers, id)) {
+          progress.activeAssessment.historicalAnswers[id] = progress.activeAssessment.answers[id];
+          delete progress.activeAssessment.answers[id];
+        }
+        if (typeof progress.activeAssessment.submissions[id] === 'string') {
+          progress.activeAssessment.historicalSubmissions[id] = progress.activeAssessment.submissions[id];
+        }
+      }
+      progress.activeAssessment.questionRevisions[id] = currentRevision;
+    }
   } else {
     progress.activeAssessment = null;
   }
@@ -180,9 +238,22 @@ export function validateBackup(input) {
   if (progress.solved !== undefined && (!Array.isArray(progress.solved) || !progress.solved.every(id => typeof id === 'string'))) {
     throw new TypeError('Backup has an invalid solved-problem list.');
   }
+  if (progress.historicalSolved !== undefined &&
+      (!Array.isArray(progress.historicalSolved) || !progress.historicalSolved.every(id => typeof id === 'string'))) {
+    throw new TypeError('Backup has an invalid historical solved-problem list.');
+  }
+  if (progress.solvedRevisions !== undefined && (!isRecord(progress.solvedRevisions) ||
+      !Object.values(progress.solvedRevisions).every(revision => Number.isInteger(revision) && revision >= 0))) {
+    throw new TypeError('Backup has invalid solved-problem revisions.');
+  }
   if (progress.completedLevels !== undefined &&
       (!Array.isArray(progress.completedLevels) || !progress.completedLevels.every(level => Number.isInteger(level) && level >= 1 && level <= 100))) {
     throw new TypeError('Backup has an invalid completed-level list.');
+  }
+  if (progress.historicalCompletedLevels !== undefined &&
+      (!Array.isArray(progress.historicalCompletedLevels) ||
+       !progress.historicalCompletedLevels.every(level => Number.isInteger(level) && level >= 1 && level <= 100))) {
+    throw new TypeError('Backup has an invalid historical completed-level list.');
   }
   if (progress.submissions !== undefined && !Array.isArray(progress.submissions)) {
     throw new TypeError('Backup has an invalid submission history.');
@@ -223,10 +294,14 @@ export function validateBackup(input) {
   if (progress.daily) {
     if (progress.daily.date !== undefined && typeof progress.daily.date !== 'string') throw new TypeError('Backup has an invalid daily challenge date.');
     if (progress.daily.problemId !== undefined && typeof progress.daily.problemId !== 'string') throw new TypeError('Backup has an invalid daily problem.');
-    for (const key of ['completedDates', 'rewardedDates']) {
+    for (const key of ['completedDates', 'rewardedDates', 'historicalCompletedDates']) {
       if (progress.daily[key] !== undefined &&
           (!Array.isArray(progress.daily[key]) || !progress.daily[key].every(date => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)))) {
         throw new TypeError(`Backup has an invalid daily ${key} list.`);
+      }
+      if (progress.daily.contentRevision !== undefined &&
+          (!Number.isInteger(progress.daily.contentRevision) || progress.daily.contentRevision < 0)) {
+        throw new TypeError('Backup has an invalid daily content revision.');
       }
     }
   }

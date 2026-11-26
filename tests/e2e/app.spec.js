@@ -91,6 +91,29 @@ test('returning visitors resume the next problem and a legacy saved draft', asyn
   expect(await getEditorValue(page)).toBe('print("legacy draft")');
 });
 
+test('replaced problems retain old drafts but require a new accepted submission', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('xpc-progress', JSON.stringify({
+      profile: { level: 1, xp: 20 },
+      solved: ['level-01-problem-1', 'level-01-problem-2'],
+      completedLevels: [1]
+    }));
+    localStorage.setItem('xpc-draft-level-01-problem-2', 'print("old draft")');
+  });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Echo a Line' })).toBeVisible();
+  expect(await getEditorValue(page)).toBe('print("old draft")');
+  const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')));
+  expect(progress.historicalSolved).toContain('level-01-problem-2');
+  expect(progress.solved).not.toContain('level-01-problem-2');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Wrong Answer', { timeout: 90000 });
+  await setEditorValue(page, 'line = input()\nprint(line)');
+  await page.getByRole('button', { name: 'Submit Solution' }).click();
+  await expect(page.locator('#execution-state')).toHaveText('Accepted', { timeout: 90000 });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('xpc-progress')).solvedRevisions['level-01-problem-2'])).toBe(1);
+});
+
 test('All Levels exposes the curriculum and preserves level selection', async ({ page }) => {
   await page.goto('/#/levels');
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
@@ -334,11 +357,12 @@ test('solving the five problems advances to Level 2 and celebrates completion', 
   await page.goto('/');
   const solutions = [
     'print("Hello, World!")',
-    'import sys\nfor line in sys.stdin:\n    print(line.strip())',
-    'import sys\nfor line in sys.stdin:\n    print(line.strip())',
-    'import sys\nfor line in sys.stdin:\n    print(line.strip())',
-    'import sys\nfor line in sys.stdin:\n    print(line.strip())'
+    'print(input())',
+    'print(int(input()) * 2)',
+    'n = int(input())\nprint(n * n)',
+    'a, b = map(int, input().split())\nprint(a + b)'
   ];
+  const titles = ['Print Hello, World!', 'Echo a Line', 'Double an Integer', 'Square an Integer', 'Add Two Integers'];
   for (let index = 1; index <= 5; index += 1) {
     await setEditorValue(page, solutions[index - 1]);
     expect(await getEditorValue(page)).toBe(solutions[index - 1]);
@@ -351,7 +375,7 @@ test('solving the five problems advances to Level 2 and celebrates completion', 
     if (index < 5) {
       const nextProblem = index + 1;
       await page.getByRole('link', { name: new RegExp(`Problem ${nextProblem}`) }).click();
-      await expect(page.getByRole('heading', { name: `Printing values — Practice ${nextProblem}` })).toBeVisible();
+      await expect(page.getByRole('heading', { name: titles[nextProblem - 1], exact: true })).toBeVisible();
     }
   }
   await expect(page.getByRole('heading', { name: 'Level Complete' })).toBeVisible();

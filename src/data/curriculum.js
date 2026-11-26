@@ -1,3 +1,5 @@
+import { beginnerChallenges } from './beginner.js';
+
 export const stageNames = [
   ['Python Fundamentals', 'Printing, input, arithmetic, and expressions'],
   ['Conditions', 'Comparisons and conditional problem-solving'],
@@ -120,6 +122,7 @@ function makeProblem(level, index) {
       explanation: 'Call print() with the exact greeting. Python adds the required newline automatically.'
     });
   }
+  if (beginnerChallenges[id]) Object.assign(problem, beginnerChallenges[id]);
   return problem;
 }
 

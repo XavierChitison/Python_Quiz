@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  clearApplicationData, createDefaultProgress, getDraft, progressSnapshot,
+  clearApplicationData, createDefaultProgress, exportBackup, getDraft, progressSnapshot,
   normalizeProgress, saveDraft, validateBackup
 } from '../../src/services/storage.js';
+import { recordAccepted } from '../../src/services/progression.js';
+import { problems } from '../../src/data/curriculum.js';
 
 class MemoryStorage {
   values = new Map();
@@ -35,7 +37,7 @@ describe('browser progress storage', () => {
         profile: { level: 10, xp: 25, streak: 3 },
         settings: { fontSize: 16, autoRun: false, editorTheme: 'light', removedFeature: true },
         solved: ['known', 'known'],
-        completedLevels: [2, 3, 2],
+        completedLevels: [20, 21, 20],
         dashboard: { inventedXp: 500 }
       }
     });
@@ -45,7 +47,7 @@ describe('browser progress storage', () => {
     expect(restored.settings.removedFeature).toBeUndefined();
     expect(restored.dashboard).toBeUndefined();
     expect(restored.solved).toEqual(['known']);
-    expect(restored.completedLevels).toEqual([2, 3]);
+    expect(restored.completedLevels).toEqual([20, 21]);
     expect(() => validateBackup({
       version: 1,
       progress: { completedLevels: [101] }
@@ -65,6 +67,42 @@ describe('browser progress storage', () => {
     });
     expect(locallyNormalized.profile).toMatchObject({ level: 100, xp: 0, streak: 0 });
     expect(locallyNormalized.settings).toMatchObject({ fontSize: 14, autoRun: false, editorTheme: 'dark' });
+  });
+
+  it('archives old completions without losing drafts, unlocks, assessment code, or daily rewards', () => {
+    const changed = 'level-01-problem-2';
+    const unchanged = 'level-01-problem-1';
+    const date = '2025-04-10';
+    localStorage.setItem('xpc-progress', JSON.stringify({
+      profile: { level: 5, xp: 100 },
+      solved: [unchanged, changed],
+      completedLevels: [1],
+      daily: { date, problemId: changed, completedDates: [date], rewardedDates: [date] },
+      activeAssessment: {
+        questionIds: [changed], endsAt: Date.now() + 100000,
+        answers: { [changed]: true }, submissions: { [changed]: 'old assessment code' }
+      }
+    }));
+    saveDraft(changed, 'old saved code');
+    const migrated = progressSnapshot();
+
+    expect(migrated.solved).toEqual([unchanged]);
+    expect(migrated.historicalSolved).toEqual([changed]);
+    expect(migrated.completedLevels).toEqual([]);
+    expect(migrated.historicalCompletedLevels).toEqual([1]);
+    expect(migrated.profile).toMatchObject({ level: 5, xp: 100 });
+    expect(getDraft(changed)).toBe('old saved code');
+    expect(migrated.daily).toMatchObject({ completedDates: [], historicalCompletedDates: [date], rewardedDates: [date] });
+    expect(migrated.activeAssessment.answers).toEqual({});
+    expect(migrated.activeAssessment.historicalAnswers).toEqual({ [changed]: true });
+    expect(migrated.activeAssessment.historicalSubmissions).toEqual({ [changed]: 'old assessment code' });
+
+    const replacement = problems.find(problem => problem.id === changed);
+    recordAccepted(migrated, replacement, new Date(2025, 3, 11, 12));
+    const restored = validateBackup(exportBackup(migrated));
+    expect(restored.solved).toContain(changed);
+    expect(restored.solvedRevisions[changed]).toBe(1);
+    expect(restored.historicalSolved).toContain(changed);
   });
 
   it('only removes application progress and code drafts on reset', () => {

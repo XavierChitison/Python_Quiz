@@ -50,6 +50,7 @@ export function recordAccepted(progress, problem, now = new Date()) {
   if (progress.solved.includes(problem.id)) return result;
 
   progress.solved.push(problem.id);
+  progress.solvedRevisions[problem.id] = problem.contentRevision || 0;
   progress.profile.xp = (Number(progress.profile.xp) || 0) + (problem.xpReward || 0);
   result.firstSolve = true;
 
