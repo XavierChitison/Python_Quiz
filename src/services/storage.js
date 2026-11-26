@@ -1,4 +1,4 @@
-import { problems } from '../data/curriculum.js?v=2.0.0';
+import { problems } from '../data/curriculum.js?v=2.1.0';
 
 const STORAGE_KEY = 'xpc-progress';
 const LEGACY_PROGRESS_KEY = 'pylevel-progress';

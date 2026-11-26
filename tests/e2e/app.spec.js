@@ -238,8 +238,8 @@ test('All Levels exposes the curriculum and preserves level selection', async ({
   await expect(page.getByRole('heading', { name: 'All Levels' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Level 1, Printing values, current/ })).toBeVisible();
   await expect(page.getByText('of 500', { exact: false })).toBeVisible();
-  await page.getByLabel('Search levels and problems').fill('Even and odd');
-  await expect(page.getByRole('button', { name: /Level 14, Even and odd/ })).toBeVisible();
+  await page.getByLabel('Search levels and problems').fill('Thresholds and equations');
+  await expect(page.getByRole('button', { name: /Level 14, Thresholds and equations/ })).toBeVisible();
 });
 
 test('daily challenge opens even when its problem is beyond normal progression', async ({ page }) => {

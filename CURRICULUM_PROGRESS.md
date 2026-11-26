@@ -1,6 +1,6 @@
 # Curriculum overhaul checkpoint
 
-The overhaul is incomplete. Do not push this partial curriculum to the live site.
+The 500-problem overhaul is implemented and locally validated. Deployment verification is pending.
 
 ## Status
 
@@ -14,7 +14,7 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 - Batch 8 (levels 71–80): implemented and reference-tested; 50 replacements.
 - Batch 9 (levels 81–90): implemented and reference-tested; 50 replacements.
 - Batch 10 (levels 91–100): implemented and reference-tested; 50 replacements.
-- All 500 replacement records are integrated; final validation and deployment are pending.
+- All 500 replacement records are integrated and locally validated; deployment is pending.
 - Cross-curriculum objective review identified two superficial duplicates, which were replaced; automated duplicate detection cannot prove semantic uniqueness.
 
 ## Implemented objectives
@@ -100,11 +100,11 @@ The final semantic review replaced the duplicate prefix and division objectives 
 
 IDs, draft keys, and level unlocks remain unchanged. Old completions for revised problems are archived separately and are not treated as passing the replacement. Previously completed levels, assessment answers and submissions, and daily completion dates are retained as history; earned XP, streaks, and daily rewards remain intact. Existing drafts remain under their original keys and may need editing for the replacement problem. Re-solving a replacement can award its normal XP again.
 
-The history is retained in browser storage and backups, but the existing UI has no separate history view. Versioning must be advanced for future revisions of any already-revised problem. Before eventual deployment, update the static asset version queries documented in `DEPLOYMENT_GUIDE.md` so browsers do not reuse cached old modules.
+The history is retained in browser storage and backups, but the existing UI has no separate history view. Versioning must be advanced for future revisions of any already-revised problem. The shared static module version was advanced to 2.1.0 to prevent returning browsers from reusing cached old modules.
 
 ## Verification
 
-- `npm test`: 36 tests passed, including progress migration and independent JavaScript checks of all 800 Batch 1 and 2 case outputs.
+- Final `npm test`: 101 tests passed, including progress migration and independent expected-output checks.
 - Targeted Pyodide validation: all 400/400 Batch 1 reference cases passed, and all 50 starter programs compiled. This does not independently prove semantic uniqueness.
 - Targeted Pyodide validation: all 400/400 Batch 2 reference cases passed, and all 50 starter programs compiled.
 - Targeted Batch 3 tests: 20 tests passed, including progress migration, integration, and independent expected-output checks; all 400/400 Batch 3 reference cases passed in Pyodide, and all 50 starters compiled.
@@ -115,7 +115,7 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Targeted Batch 8 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
 - Targeted Batch 9 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
 - Targeted Batch 10 tests: all 400/400 reference cases passed in Pyodide and all 50 starters ran successfully; expected outputs were independently checked.
-- Before Batch 7, `npm run validate:problems` passed 4,001/4,001 cases, including 200 then-generated placeholders; this does not establish content completeness or semantic uniqueness. The generated validation report predates Batch 7.
+- Final `npm run validate:problems`: 4,001/4,001 cases passed in Pyodide; all 500 records have content revisions. The validator uses the application's output-whitespace normalization.
 - Independent boundary checks passed for 1,480 calendar-date, half-open interval, and rotatable-rectangle inputs.
 - Batch 2 cases rejected five representative incorrect approaches involving switch states, degenerate triangles, filename suffixes, empty intervals, and rectangle rotation.
 - Batch 3 cases rejected four representative incorrect approaches involving whitespace, overlapping digit pairs, tied records, and early stopping with negative values.
@@ -131,11 +131,11 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Level 14-4: the revised reference passed its eight cases and 1,000 additional generated cases in Pyodide; revision-one migration was tested.
 - Level 9-5: the revised reference passed its eight cases and 500 additional generated cases in Pyodide; revision-one migration was tested.
 - Alternating harmonic-sum rounding was independently checked for all 20 permitted positive term counts.
-- Full browser regression: 28 tests passed before the example-description adjustment and later curriculum changes. Focused browser checks subsequently passed for old progress migration, the new first problem and level progression, and whitespace-preserving multiline output.
+- Final full browser regression: 31 tests passed, covering routing, progress migration, the editor, execution, settings, exports, music controls, mobile viewport, and automated accessibility checks.
 - Representative incorrect solutions for the first problem and all 35 level 4–10 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
 - The duplicate audit of all 500 records found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Run the full reference suite, unit tests, and browser regression. Update cache versions before deployment. Do not publish until final checks pass.
+Commit the release-validation updates, push the completed curriculum if authorized, and verify the GitHub Pages deployment.
