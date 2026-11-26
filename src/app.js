@@ -24,6 +24,7 @@ export class App {
     this.root = root;
     this.progress = progressSnapshot();
     this.progress.profile ||= { name: 'Learner', level: 1, xp: 0, streak: 0 };
+    this.progress.profile.started ||= false;
     this.progress.solved ||= [];
     this.progress.submissions ||= [];
     this.progress.settings ||= { theme: 'dark', defaultFormat: 'stdin', fontSize: 14 };
@@ -114,7 +115,7 @@ export class App {
       problems: () => this.problemLibrary(),
       daily: () => this.dailyChallenge(),
       generator: () => this.generator(),
-      interview: () => this.placeholder('Interview Practice', 'Timed, scored coding assessments', 'Timer'),
+      interview: () => this.interview(),
       debugging: () => this.debugging(),
       playground: () => this.playground(),
       lessons: () => this.lessons(),
@@ -142,8 +143,10 @@ export class App {
     const accuracy = this.progress.submissions.length ? Math.round(this.progress.submissions.filter(s => s.accepted).length / this.progress.submissions.length * 100) : 0;
     const level = this.progress.profile.level;
     const current = levels[level - 1];
+    const onboarding = !this.progress.profile.started ? `<section class="card onboarding-card"><div><p class="eyebrow">GET STARTED</p><h2>Personalize your learning</h2><p>Choose an experience level and a primary goal.</p></div><form id="onboarding-form" class="onboarding-form"><label>Name<input name="name" maxlength="40" value="${this.escape(this.progress.profile.name==='Learner'?'':this.progress.profile.name)}" placeholder="Optional display name"></label><label>Experience<select name="experience"><option>Completely new to Python</option><option>Know basic syntax</option><option>Comfortable with basic Python</option><option>Preparing for coding interviews</option></select></label><label>Goal<select name="goal"><option>Learn Python fundamentals</option><option>Improve problem-solving</option><option>Prepare for internship assessments</option><option>Prepare for technical interviews</option></select></label><button class="button primary" type="submit">Start Learning</button></form></section>` : '';
     return `
       <div class="page dashboard-page">
+        ${onboarding}
         <section class="welcome-row"><div><p class="eyebrow">YOUR PYTHON JOURNEY</p><h1>Welcome back, ${this.escape(this.progress.profile.name)}</h1><p>Keep building toward confident, independent problem solving.</p></div><div class="welcome-actions"><a class="button secondary" href="#problems">Quick Practice</a><a class="button primary" href="#workspace/${current.problems[0].id}">Continue Learning</a></div></section>
         <section class="stats-grid">
           ${this.statCard('CircleCheck','Problems Solved',String(solved),'Start with your next challenge','purple')}
@@ -193,7 +196,13 @@ export class App {
   lessons() { const lessons=['What Python is','Variables','print()','input()','Arithmetic','if statements','For loops','Lists','Dictionaries','Functions','Recursion','Big O notation']; return `<div class="page"><div class="page-heading"><h1>Python Lessons</h1></div><div class="lesson-grid">${lessons.map((l,i)=>`<article class="lesson-card"><span>${String(i+1).padStart(2,'0')}</span><h3>${l}</h3><p>Plain-language explanation, syntax example, common mistakes, and a runnable exercise.</p><button class="text-button" data-lesson="${i}">Open lesson <i data-lucide="ArrowRight"></i></button></article>`).join('')}</div></div>`; }
   guided() { return this.placeholder('Guided Learning', 'Follow one step at a time with behavioral feedback.', 'Route'); }
   review() { return this.placeholder('Review Practice', 'Previously learned concepts scheduled for spaced review.', 'RotateCcw'); }
-  mistakes() { return this.placeholder('Mistake Notebook', 'Review unsuccessful submissions and corrected solutions.', 'NotebookTabs'); }
+  mistakes() {
+    const mistakes = this.progress.mistakes || [];
+    return `<div class="page"><div class="page-heading"><h1>Mistake Notebook</h1></div>${mistakes.length ? `<div class="mistake-list">${mistakes.slice().reverse().map(m=>`<article class="card mistake-card"><div><span class="difficulty">${m.difficulty}</span><h3>${m.title}</h3><small>${new Date(m.date).toLocaleString()} · ${m.topic}</small></div><p>${m.error || 'Incorrect solution output'}</p><a class="button secondary" href="#workspace/${m.problemId}">Retry Problem</a></article>`).join('')}</div>` : `<article class="card feature-placeholder"><div class="placeholder-icon"><i data-lucide="NotebookTabs"></i></div><h2>No mistakes yet</h2><p>Failed submissions will appear here automatically.</p></article>`}</div>`;
+  }
+  interview() {
+    return `<div class="page"><div class="page-heading"><div><p class="eyebrow">MOCK ASSESSMENT</p><h1>Interview Practice</h1></div></div><form class="generator card" id="interview-form"><label>Preset<select name="preset"><option>Absolute Beginner Assessment</option><option>PNC-Style Practice</option><option>Entry-Level Internship Assessment</option><option>String and List Assessment</option></select></label><label>Duration<select name="duration"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Questions<select name="questions"><option value="3">3 questions</option><option value="5">5 questions</option><option value="10">10 questions</option></select></label><button class="button primary" type="submit">Start Assessment</button></form></div>`;
+  }
   analytics() { return `<div class="page"><div class="page-heading"><h1>Analytics</h1></div><section class="stats-grid">${this.statCard('Target','Accuracy','0%','No submissions yet','green')}${this.statCard('Timer','Practice Time','0 min','Across this device','blue')}${this.statCard('TrendingUp','Problems Attempted','0','Real submissions only','purple')}</section><article class="card chart-empty"><i data-lucide="ChartNoAxesCombined"></i><h2>Insufficient data</h2><p>Complete coding challenges to generate analytics.</p></article></div>`; }
   history() { return `<div class="page"><div class="page-heading"><h1>Submission History</h1></div>${this.recentSubmissions()}</div>`; }
   achievements() {
@@ -224,6 +233,17 @@ export class App {
   }
 
   bindProblemPage(problemId) {
+    document.getElementById('onboarding-form')?.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      this.progress.profile.name = String(data.get('name')).trim() || 'Learner';
+      this.progress.profile.experience = String(data.get('experience'));
+      this.progress.profile.goal = String(data.get('goal'));
+      this.progress.profile.started = true;
+      saveProgress(this.progress);
+      this.renderShell();
+      this.renderRoute();
+    });
     document.getElementById('problem-search')?.addEventListener('input', event => {
       const value = event.currentTarget.value;
       history.replaceState(null,'',`#problems?q=${encodeURIComponent(value)}`);
@@ -259,6 +279,26 @@ export class App {
       event.preventDefault();
       const level = Number(new FormData(event.currentTarget).get('level'));
       location.hash = `workspace/${levels[level-1].problems[0].id}`;
+    });
+    document.getElementById('interview-form')?.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const duration = Number(data.get('duration'));
+      const questionCount = Number(data.get('questions'));
+      const assessment = {
+        id: `assessment-${Date.now()}`,
+        preset: String(data.get('preset')),
+        durationMinutes: duration,
+        questionCount,
+        startedAt: Date.now(),
+        endsAt: Date.now() + duration * 60000,
+        questionIds: problems.slice(0, questionCount).map(problem => problem.id),
+        answers: {}
+      };
+      this.progress.assessments ||= [];
+      this.progress.assessments.push(assessment);
+      saveProgress(this.progress);
+      location.hash = `workspace/${assessment.questionIds[0]}`;
     });
   }
 

@@ -10,8 +10,8 @@ for (const level of levels) {
     if (ids.has(problem.id)) failures.push(`Duplicate id: ${problem.id}`);
     ids.add(problem.id);
     if (!problem.referenceSolution) failures.push(`Missing reference solution: ${problem.id}`);
-    if (problem.publicTestCases.length < 1) failures.push(`Missing public tests: ${problem.id}`);
-    if (problem.hiddenTestCases.length < 1) failures.push(`Missing hidden tests: ${problem.id}`);
+    if (problem.publicTestCases.length < 3) failures.push(`Expected at least 3 public tests: ${problem.id}`);
+    if (problem.hiddenTestCases.length < 5) failures.push(`Expected at least 5 hidden tests: ${problem.id}`);
   }
 }
 if (failures.length) {

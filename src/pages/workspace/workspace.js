@@ -5,6 +5,7 @@ let monaco;
 let editor;
 let worker;
 let runCounter = 0;
+let runTimeout;
 
 function normalizeOutput(output) {
   return output.replace(/\r\n/g, '\n').replace(/\n+$/, '').replace(/[ \t]+\n/g, '\n');
@@ -97,8 +98,10 @@ async function initWorkspace(problem, progress) {
 }
 
 function stopExecution() {
+  clearTimeout(runTimeout);
   if (worker) worker.terminate();
   worker = null;
+  pendingRun = null;
   document.getElementById('engine-status').textContent = 'Execution cancelled';
   document.getElementById('stop-run').disabled = true;
   document.getElementById('console-output').textContent = 'Execution cancelled.';
@@ -107,7 +110,8 @@ function stopExecution() {
 let pendingRun;
 function runCode(problem, submit) {
   if (!editor) return;
-  if (!worker) worker = new Worker(new URL('../../workers/python.worker.js', import.meta.url));
+  if (worker) worker.terminate();
+  worker = new Worker(new URL('../../workers/python.worker.js', import.meta.url));
   worker.onmessage = handleWorkerMessage;
   const cases = submit ? [...problem.publicTestCases, ...problem.hiddenTestCases] : [problem.publicTestCases[0]];
   const custom = document.getElementById('custom-input')?.value;
@@ -123,12 +127,24 @@ function executeNextCase(customInput) {
   if (!pendingRun) return;
   const { problem, cases, index, code } = pendingRun;
   if (index >= cases.length) return finishRun();
+  if (worker) worker.terminate();
+  worker = new Worker(new URL('../../workers/python.worker.js', import.meta.url));
+  worker.onmessage = handleWorkerMessage;
   const tc = cases[index];
   const input = pendingRun.submit ? tc.input : (pendingRun.customInput?.trim() ? pendingRun.customInput : tc.input);
   pendingRun.output = '';
   const id = ++runCounter;
   pendingRun.currentId = id;
   worker.postMessage({ id, code, input, timeout:8000 });
+  clearTimeout(runTimeout);
+  runTimeout = setTimeout(() => {
+    if (!pendingRun || pendingRun.currentId !== id) return;
+    if (worker) worker.terminate();
+    worker = null;
+    pendingRun.results.push({tc, actual:pendingRun.output, passed:false, error:'Time Limit Exceeded'});
+    pendingRun.index++;
+    executeNextCase(customInput);
+  }, 8000);
 }
 
 function handleWorkerMessage(event) {
@@ -143,6 +159,7 @@ function handleWorkerMessage(event) {
     document.getElementById('console-output').textContent += message.text + '\n';
   }
   if (message.type === 'error' || message.type === 'complete') {
+    clearTimeout(runTimeout);
     const tc = pendingRun.cases[pendingRun.index];
     const actual = normalizeOutput(pendingRun.output);
     const expected = normalizeOutput(tc.output);
@@ -155,6 +172,7 @@ function handleWorkerMessage(event) {
 }
 
 function finishRun() {
+  clearTimeout(runTimeout);
   const run = pendingRun;
   pendingRun = null;
   document.getElementById('engine-status').textContent = run.passed === run.cases.length ? 'Accepted' : 'Wrong Answer';
@@ -168,7 +186,21 @@ function finishRun() {
   progress.profile ||= { name:'Learner', level:1, xp:0, streak:0 };
   progress.solved ||= [];
   progress.submissions ||= [];
+  progress.mistakes ||= [];
   progress.submissions.push({problemId:run.problem.id,title:run.problem.title,accepted,date:new Date().toISOString(),code:run.code});
+  if (!accepted) {
+    const failed = run.results.find(result => !result.passed);
+    progress.mistakes.push({
+      problemId:run.problem.id,
+      title:run.problem.title,
+      topic:run.problem.topic,
+      difficulty:run.problem.difficulty,
+      date:new Date().toISOString(),
+      code:run.code,
+      error:failed?.error || 'One or more test cases did not match.',
+      failedTests:run.results.filter(result=>!result.passed).length
+    });
+  }
   if (accepted && !progress.solved.includes(run.problem.id)) {
     progress.solved.push(run.problem.id);
     progress.profile.xp = (progress.profile.xp || 0) + run.problem.xpReward;

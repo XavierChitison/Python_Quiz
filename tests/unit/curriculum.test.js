@@ -14,4 +14,11 @@ describe('PyLevel curriculum', () => {
   it('uses unique problem identifiers', () => {
     expect(new Set(problems.map(problem => problem.id)).size).toBe(problems.length);
   });
+  it('provides complete public and hidden test coverage', () => {
+    expect(problems.every(problem =>
+      problem.publicTestCases.length >= 3 &&
+      problem.hiddenTestCases.length >= 5 &&
+      Boolean(problem.referenceSolution)
+    )).toBe(true);
+  });
 });

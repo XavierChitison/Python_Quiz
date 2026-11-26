@@ -35,9 +35,30 @@ function makeProblem(level, index) {
   const seed = level * 100 + index;
   const n = 5 + ((seed * 7) % 20);
   const formats = level < 61 ? ['stdin'] : (level % 3 === 0 ? ['stdin', 'function'] : ['stdin']);
+  const stdinNumbers = [n, n + 3, n + 11];
   const publicTestCases = level <= 10
-    ? [{ input: `${n}\n`, output: String(n * (level === 1 ? 1 : level === 2 ? 1 : level === 3 ? 1 : level === 4 ? n + 3 : level === 5 ? n - 3 : level === 6 ? n * 3 : level === 7 ? Math.floor(n / 2) : level === 8 ? n * n : level === 9 ? n % 4 : n + n * 2)) }]
-    : [{ input: `${n}\n`, output: String(n) }];
+    ? stdinNumbers.map(value => {
+        let output;
+        if (level === 1 || level === 2) output = value;
+        else if (level === 3) output = value;
+        else if (level === 4) output = value + 3;
+        else if (level === 5) output = value - 3;
+        else if (level === 6) output = value * 3;
+        else if (level === 7) output = Math.floor(value / 2);
+        else if (level === 8) output = value * value;
+        else if (level === 9) output = value % 4;
+        else output = value + value * 2;
+        return {input:`${value}\n`, output:String(output)};
+      })
+    : stdinNumbers.map(value => ({input:`${value}\n`, output:String(value)}));
+  let referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = line.strip()\n    if value:\n        print(value)\n';
+  if (level === 4) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value + 3)\n';
+  if (level === 5) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value - 3)\n';
+  if (level === 6) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value * 3)\n';
+  if (level === 7) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value // 2)\n';
+  if (level === 8) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value ** 2)\n';
+  if (level === 9) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value % 4)\n';
+  if (level === 10) referenceSolution = 'import sys\n\nfor line in sys.stdin:\n    value = int(line)\n    print(value + value * 2)\n';
   return {
     id, title: `${topic} — Practice ${index}`, level, difficulty, topic,
     tags: [topic.toLowerCase().replaceAll(' ', '-')],
@@ -51,13 +72,17 @@ function makeProblem(level, index) {
     supportedFormats: formats,
     starterCode: { stdin: starter(level % 3 === 0 ? 'stdin' : 'stdin'), function: starter('function') },
     publicTestCases,
-    hiddenTestCases: [
-      { input: `${n + 1}\n`, output: String(n + 1) },
-      { input: '1\n', output: '1' },
-      { input: '0\n', output: '0' },
-      { input: '12\n', output: '12' },
-      { input: '100\n', output: '100' }
-    ],
+    hiddenTestCases: [n - 1, 0, 1, 12, 100].map(value => {
+      let output = value;
+      if (level === 4) output = value + 3;
+      else if (level === 5) output = value - 3;
+      else if (level === 6) output = value * 3;
+      else if (level === 7) output = Math.floor(value / 2);
+      else if (level === 8) output = value * value;
+      else if (level === 9) output = value % 4;
+      else if (level === 10) output = value + value * 2;
+      return {input:`${value}\n`, output:String(output)};
+    }),
     hints: [
       'Read the input format before choosing an approach.',
       `Use the core Python concept associated with ${topic}.`,
@@ -65,7 +90,7 @@ function makeProblem(level, index) {
       'Use a small example to test the partial implementation.',
       'Run several edge cases after completing the solution.'
     ],
-    referenceSolution: 'import sys\n\nfor line in sys.stdin:\n    value = line.strip()\n    if value:\n        print(value)\n',
+    referenceSolution,
     alternativeSolutions: [],
     explanation: `The solution should preserve the expected behavior for ${topic.toLowerCase()}, while handling whitespace and edge cases consistently.`,
     commonMistakes: ['Printing extra text', 'Using the wrong input type', 'Missing edge cases'],
