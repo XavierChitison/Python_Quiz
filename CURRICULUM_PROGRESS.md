@@ -10,8 +10,9 @@ The overhaul is incomplete. Do not push this partial curriculum to the live site
 - Batch 4 (levels 31–40): implemented and reference-tested; 50 replacements.
 - Batch 5 (levels 41–50): implemented and reference-tested; 50 replacements.
 - Batch 6 (levels 51–60): implemented and reference-tested; 50 replacements.
+- Batch 7 (levels 61–70): implemented and reference-tested; 50 replacements.
 - Later batches have independent drafts in progress but are not integrated or validated as complete batches.
-- 200 problem records still need replacement and review against the full requirements.
+- 150 problem records still need replacement and review against the full requirements.
 - Cross-curriculum semantic uniqueness remains unverified.
 
 ## Implemented objectives
@@ -83,6 +84,8 @@ Batch 5 adds list, grouping, and sequence-algorithm problems, each with eight ca
 
 Batch 6 adds dictionary, set, frequency, and graph-mapping problems. Each has two explained examples and at least eight cases.
 
+Batch 7 adds functions, callbacks, matrices, numerical methods, and linear algebra. Each has two explained examples and eight cases.
+
 ## Compatibility
 
 IDs, draft keys, and level unlocks remain unchanged. Old completions for revised problems are archived separately and are not treated as passing the replacement. Previously completed levels, assessment answers and submissions, and daily completion dates are retained as history; earned XP, streaks, and daily rewards remain intact. Existing drafts remain under their original keys and may need editing for the replacement problem. Re-solving a replacement can award its normal XP again.
@@ -98,7 +101,8 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Targeted Batch 4 tests: 21 tests passed, including progress migration and independent expected-output checks; all 400/400 Batch 4 reference cases passed in Pyodide with exact output whitespace, and all 50 starters compiled.
 - Targeted Batch 5 tests: 20 tests passed, including progress migration and independent expected-output checks; all 400/400 Batch 5 reference cases passed in Pyodide and all 50 starters compiled.
 - Targeted Batch 6 tests: 21 tests passed, including progress migration and independent expected-output checks; all 401/401 Batch 6 reference cases passed in Pyodide and all 50 starters ran successfully.
-- `npm run validate:problems`: 4,001/4,001 cases passed across the current curriculum, including 200 still-generated placeholders; this does not establish content completeness or semantic uniqueness.
+- Targeted Batch 7 tests: 23 tests passed, including progress migration and independent expected-output checks; all 400/400 Batch 7 reference cases passed in Pyodide and all 50 starters ran successfully. Additional checks covered 482 function boundaries and 3,920 exact trapezoid-rounding inputs.
+- Before Batch 7, `npm run validate:problems` passed 4,001/4,001 cases, including 200 then-generated placeholders; this does not establish content completeness or semantic uniqueness. The generated validation report predates Batch 7.
 - Independent boundary checks passed for 1,480 calendar-date, half-open interval, and rotatable-rectangle inputs.
 - Batch 2 cases rejected five representative incorrect approaches involving switch states, degenerate triangles, filename suffixes, empty intervals, and rectangle rotation.
 - Batch 3 cases rejected four representative incorrect approaches involving whitespace, overlapping digit pairs, tied records, and early stopping with negative values.
@@ -107,12 +111,13 @@ The history is retained in browser storage and backups, but the existing UI has 
 - Levels 41–45: 200 reference cases passed in Pyodide; 1,500 independent list property checks passed, and six representative incorrect implementations were rejected.
 - Levels 46–50: 200 reference cases passed in Pyodide; 1,500 independent list and window property checks passed, and six representative incorrect implementations were rejected.
 - Batch 6: 1,250 independent collections property checks passed; six representative incorrect implementations were rejected after adding a missing duplicate-requirement case.
+- Batch 7: 1,779 independent matrix and linear-equation property checks passed, including 300 diagonal-sorting cases.
 - Alternating harmonic-sum rounding was independently checked for all 20 permitted positive term counts.
 - Full browser regression: 28 tests passed before the example-description adjustment and later curriculum changes. Focused browser checks subsequently passed for old progress migration, the new first problem and level progression, and whitespace-preserving multiline output.
 - Representative incorrect solutions for the first problem and all 35 level 4–10 problems were rejected by their cases in Pyodide.
 - The speed reference was compared with exact decimal, half-even rounding for all 100,010 permitted distance-and-duration combinations.
-- The duplicate audit of levels 1–60 found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. The remaining 200 generated records have not been replaced. Normalized AST matches are review candidates, not conclusive semantic duplicates.
+- The duplicate audit of levels 1–70 found no duplicate IDs, titles, descriptions, references, AST candidates, or case groups, and no revised problem has fewer than two examples or six tests. The remaining 150 generated records have not been replaced. Normalized AST matches are review candidates, not conclusive semantic duplicates.
 
 ## Next action
 
-Commit Batch 6 after manifest synchronization, then continue from `level-61-problem-1`. Do not publish until all batches and regression tests pass.
+Continue Batch 8 from `level-71-problem-1`, reviewing and integrating its drafts. Do not publish until all batches and regression tests pass.
