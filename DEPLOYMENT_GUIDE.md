@@ -14,6 +14,8 @@ GitHub Pages serves the root `index.html` and its `src/` and `public/` directori
 
 The branch must contain the static entry point, styles, JavaScript modules, and `public/vendor/ace/` assets; committing only `index.html` is not sufficient. The `.nojekyll` file is included for direct static publishing. If a browser still displays an old version after Pages finishes deploying, refresh the page and check the Pages deployment status before changing application settings.
 
+GitHub Pages may cache files for several minutes. When releasing changes to the application modules or worker, update the shared `v` query in `index.html`, `src/main.js`, `src/app.js`, and `src/services/python-runner.js` together so returning browsers load compatible versions. Likewise, version changed static assets that may already be cached.
+
 ## Limitations
 
 Progress is stored in each visitor's browser profile and does not sync across devices. The site downloads the pinned Pyodide runtime from jsDelivr when needed. Client-side Python is not a hardened sandbox and hidden test data is inspectable.

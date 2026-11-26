@@ -197,6 +197,27 @@ test('source app and relative assets work below a repository URL prefix', async 
   expect(errors).toEqual([]);
 });
 
+test('a previously cached unversioned app does not break the current release', async ({ page }) => {
+  test.setTimeout(120_000);
+  const oldPaths = new Set([
+    '/repo/src/main.js', '/repo/src/app.js', '/repo/src/data/curriculum.js',
+    '/repo/src/services/storage.js', '/repo/src/workers/python.worker.js'
+  ]);
+  await page.route('**/repo/src/**', async route => {
+    const url = new URL(route.request().url());
+    if (oldPaths.has(url.pathname) && !url.search) {
+      await route.fulfill({ contentType: 'text/javascript', body: 'throw new Error("stale cached module");' });
+    } else {
+      await route.continue();
+    }
+  });
+  await page.goto('/repo/');
+  await expect(page.getByRole('heading', { name: 'Print Hello, World!' })).toBeVisible();
+  await setEditorValue(page, 'print("fresh worker")');
+  await page.getByRole('button', { name: 'Run Code' }).click();
+  await expect(page.locator('.console-output')).toContainText('fresh worker', { timeout: 90_000 });
+});
+
 test('workspace has no automatically detectable serious accessibility violations', async ({ page }) => {
   await page.goto('/');
   const results = await new AxeBuilder({ page }).analyze();
