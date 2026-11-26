@@ -1,12 +1,12 @@
-import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.0';
+import { levels, problems, stageNames } from './data/curriculum.js?v=2.4.1';
 import {
   clearApplicationData, createDefaultProgress, exportBackup, getDraft, normalizeProgress,
   progressSnapshot, saveDraft, saveProgress, validateBackup
-} from './services/storage.js?v=2.4.0';
-import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.0';
-import { runPython, stopPython } from './services/python-runner.js?v=2.4.0';
-import { audioController, playSound } from './services/audio.js?v=2.4.0';
-import { celebrate } from './services/effects.js?v=2.4.0';
+} from './services/storage.js?v=2.4.1';
+import { assessmentScore, currentLevel, isProblemAvailable, localDateKey, recordAccepted, selectDailyProblem } from './services/progression.js?v=2.4.1';
+import { runPython, stopPython } from './services/python-runner.js?v=2.4.1';
+import { audioController, playSound } from './services/audio.js?v=2.4.1';
+import { celebrate } from './services/effects.js?v=2.4.1';
 
 const REMOVED_ROUTES = new Set([
   'dashboard', 'roadmap', 'generator', 'playground', 'debugging', 'prediction',

@@ -232,8 +232,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .setting-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; min-width: 0; }
 .setting-card { min-width: 0; }
 .setting-card h2 { margin: 0 0 13px; font-size: 14px; }
-.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(115,132,165,.13); color: #d7deea; font-size: 11px; }
-.setting-row > span { min-width: 0; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding: 10px 0; border-bottom: 1px solid rgba(115,132,165,.13); color: #d7deea; font-size: 11px; }
+.setting-row > * { min-width: 0; max-width: 100%; }
+.setting-row > span { flex: 1 1 auto; overflow-wrap: anywhere; }
+.setting-row > button { white-space: normal; }
 .setting-row:last-child { border-bottom: 0; }
 .setting-row small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
 .toggle { width: 42px; height: 24px; flex: 0 0 auto; appearance: none; border: 1px solid #47536a; border-radius: 20px; background: #253044; cursor: pointer; transition: .18s ease; }

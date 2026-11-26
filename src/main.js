@@ -1,4 +1,4 @@
-import { App } from './app.js?v=2.4.0';
+import { App } from './app.js?v=2.4.1';
 
 const root = document.getElementById('app');
 try {
