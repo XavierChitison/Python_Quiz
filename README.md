@@ -39,7 +39,7 @@ The first Python run downloads the pinned Pyodide runtime from jsDelivr and need
 
 ## Publishing
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md). GitHub Pages can publish from the repository root without bundling. No public deployment has been run as part of this work.
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md). GitHub Pages publishes from the repository root without bundling. The production site is available at [Xavier's Python Challenge](https://xavierchitison.github.io/Python_Quiz/).
 
 See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for editor and Python-runtime notices.
 
